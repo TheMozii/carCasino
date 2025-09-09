@@ -1,0 +1,321 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto Mono", monospace;
+  scroll-behavior: smooth;
+  letter-spacing: 0.05em;
+  background: #3b0f4c;
+}
+
+header {
+  width: 20%;
+  height: 4em;
+  padding: 10px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerButton {
+  width: 100%;
+  font-size: 0.8em;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  box-shadow: 0 4px 0 #5678ff;
+  background-color: #ff3333;
+  color: black;
+  transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+}
+
+.headerButton.active {
+  background-color: #ffff00;
+}
+
+.headerButton:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.firstPage {
+  display: flex;
+  flex-direction: column;
+}
+
+.topNavigation {
+  padding-top: 25px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.topNavigationInputs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input {
+  padding: 8px 12px;
+  height: 40px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  outline: none;
+  color: #ffff;
+}
+
+.input:focus {
+  border-color: #00ff80;
+  color: #ffff;
+}
+
+.colorBox {
+  width: 40px;
+  height: 2.3em;
+  background-color: #00ff80;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.color-wrapper {
+  position: relative;
+  width: 40px;
+  height: 37px;
+}
+
+#colorPicker1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2.8em;
+  opacity: 0;
+  cursor: pointer;
+}
+
+#colorPicker2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2.8em;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.btn {
+  padding: 10px 16px;
+  background-color: #ffff00;
+  color: #000;
+  font-weight: bold;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 0 #3f7ded;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn:hover {
+  background-color: #00ff80;
+}
+
+.btn:active {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+.topNavigationBottomBtn {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+  gap: 1.5em;
+}
+
+.garage {
+  padding-top: 50px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.garage h1 {
+  color: #ffff;
+}
+
+.carsList {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pagination {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pagination span {
+  color: #ffff;
+  font-size: 1.3em;
+}
+
+.carElementTopSide {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+}
+
+.carElementTopSide p {
+  color: #ffff;
+}
+
+.workingButtons {
+  padding-top: 5px;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+}
+
+.workingButton {
+  width: 43px;
+  font-size: 0.8em;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  box-shadow: 0 4px 0 #5678ff;
+  background-color: #ff3333;
+  color: black;
+  transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+}
+
+.workingButton.active {
+  background-color: #ffff00;
+}
+
+.workingButton:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.raceTrack {
+  height: 55px;
+  width: 100%;
+  margin-top: 5px;
+  border-bottom: dashed 2px #ffff;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.raceTrackCar {
+  background: none;
+  position: absolute;
+  bottom: 1px;
+  transform: translateX(0px);
+  transition: transform linear;
+}
+
+.flag {
+  background: none;
+  position: absolute;
+  bottom: 1px;
+  left: 90%;
+}
+
+.winners {
+  padding: 25px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.winnersCount h1 {
+  color: #ffff;
+}
+
+.winners table {
+  border: solid 2px #00ff80;
+  border-radius: 12px;
+  text-align: left;
+  color: white;
+  background: #00ff80;
+  margin-top: 20px;
+}
+
+.winners th {
+  width: 5%;
+  padding: 12px 15px;
+  background: #00ff80;
+  color: #000;
+}
+.winners td {
+  width: 5%;
+  height: 45px;
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.sortBtn {
+  width: 100%;
+  border: none;
+  display: flex;
+  align-items: start;
+  background: #00ff80;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.winnerDisplay {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.winnerDisplay h1 {
+  background: #ff3333;
+  position: fixed;
+  color: #ffff00;
+  font-size: xx-large;
+  font-weight: 700;
+  border-radius: 5px;
+}
+
+.arrow {
+  background: none;
+}
+
+.arowUp {
+  display: flex;
+}
+
+.carsManag {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 40%;
+}
