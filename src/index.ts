@@ -432,25 +432,37 @@ const deleteCar = async (id: number) => {
 const deleteAllCars = async () => {
   await stopAllCars();
 
-  const [carsRes, carsWinners] = await Promise.all([
+  const [carsRes, winnersRes] = await Promise.all([
     fetch("http://localhost:3000/garage"),
     fetch("http://localhost:3000/winners"),
   ]);
 
-  if (!carsRes.ok) return;
+  if (!carsRes.ok) {
+    console.error("Failed to load cars:", carsRes.status, await carsRes.text());
+    return;
+  }
+
   const cars: Car[] = await carsRes.json();
-  const winners: Winner[] = !carsWinners.ok ? await carsWinners.json() : [];
+  const winners: Winner[] = winnersRes.ok ? await winnersRes.json() : [];
 
   await Promise.all(
-    cars.map((c) =>
-      fetch(`http://localhost:3000/garage/${c.id}`, { method: "DELETE" })
-    )
+    cars.map(async (c) => {
+      const r = await fetch(`http://localhost:3000/garage/${Number(c.id)}`, {
+        method: "DELETE",
+      });
+      if (!r.ok)
+        console.error("Car DELETE failed:", c.id, r.status, await r.text());
+    })
   );
 
   await Promise.all(
-    winners.map((w) =>
-      fetch(`http://localhost:3000/winners/${w.id}`, { method: "DELETE" })
-    )
+    winners.map(async (w) => {
+      const r = await fetch(`http://localhost:3000/winners/${Number(w.id)}`, {
+        method: "DELETE",
+      });
+      if (!r.ok)
+        console.error("Winner DELETE failed:", w.id, r.status, await r.text());
+    })
   );
 
   selectedCarId = null;
@@ -459,10 +471,14 @@ const deleteAllCars = async () => {
   UI.updateInput.value = "";
   UI.colorPicker2.value = "#00ff80";
   UI.colorBox2.style.backgroundColor = "#00ff80";
-  const winnerAlert = document.querySelector(
-    ".winnerAlert"
-  ) as HTMLElement | null;
-  if (winnerAlert) winnerAlert.remove();
+  document.querySelector(".winnerAlert")?.remove();
+
+  allCars = [];
+  allWinners = [];
+  UI.carsList.innerHTML = "";
+  UI.tableBody.innerHTML = "";
+  UI.carsCount.innerHTML = "<h1>Garage(0)</h1>";
+  UI.winnersCount.innerHTML = "<h1>Winners(0)</h1>";
 
   await loadCars();
   await loadWinners();
