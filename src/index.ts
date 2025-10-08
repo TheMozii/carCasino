@@ -288,7 +288,7 @@ class GarageController {
     });
 
     this.dom.generateBtn.addEventListener("click", async () => {
-      const cars = this.generateRandomCars(100);
+      const cars = this.generateRandomCars(7);
       await this.api.bulkCreate(cars);
       await this.reloadSamePage();
     });
