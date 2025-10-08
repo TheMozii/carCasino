@@ -319,3 +319,20 @@ header {
   gap: 8px;
   width: 40%;
 }
+
+.overlay-deleting {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  color: #fff;
+  font-weight: 600;
+  font-size: 20px;
+}
+.overlay-deleting.show {
+  display: flex;
+}

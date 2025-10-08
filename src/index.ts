@@ -47,8 +47,15 @@ class Api {
   async stop(id: number) {
     return changeEngineStatus(id, "stopped");
   }
-  async drive(id: number) {
-    return changeEngineStatus(id, "drive");
+  async drive(id: number, signal?: AbortSignal) {
+    const r = await fetch(
+      `http://localhost:3000/engine?id=${id}&status=drive`,
+      {
+        method: "PATCH",
+        signal,
+      }
+    );
+    if (!r.ok) throw new Error(await r.text());
   }
   async persistWinner(id: number, time: number) {
     return saveWinner(id, time);
@@ -117,6 +124,13 @@ class Dom {
   winnersSort = document.getElementById("winnersSort") as HTMLButtonElement;
   timeSort = document.getElementById("timeSort") as HTMLButtonElement;
   winnerDisplay = document.querySelector(".winnerDisplay") as HTMLDivElement;
+  deletingOverlay = (() => {
+    const el = document.createElement("div");
+    el.className = "overlay-deleting";
+    el.textContent = "Deleting…";
+    document.body.appendChild(el);
+    return el as HTMLDivElement;
+  })();
 }
 
 const SVG = {
@@ -167,6 +181,9 @@ class GarageController {
   private allCars: Car[] = [];
   private selectedCarId: number | null = null;
   private _winnerTimeout?: ReturnType<typeof setTimeout>;
+  private isDeletingAll = false;
+  private suppressWinnerSaves = false;
+  private activeDrives = new Map<number, AbortController>();
 
   constructor(private dom: Dom, private api: Api) {}
 
@@ -280,11 +297,58 @@ class GarageController {
     });
 
     this.dom.deleteAllCarsBtn.addEventListener("click", async () => {
-      const data = await this.api.getData();
-      if (!data) return;
-      await this.stopAll();
-      await this.api.removeAll(data.cars, data.winners);
-      await this.reloadSamePage();
+      if (this.isDeletingAll) return;
+      this.isDeletingAll = true;
+      this.suppressWinnerSaves = true;
+      this.dom.deletingOverlay.classList.add("show");
+      document.body.setAttribute("aria-busy", "true");
+
+      try {
+        const data = await this.api.getData();
+        if (!data) return;
+
+        this.dom.raceBtn.disabled = true;
+        this.dom.resetBtn.disabled = true;
+        this.dom.createBtn.disabled = true;
+        this.dom.updateBtn.disabled = true;
+        this.dom.deleteAllCarsBtn.disabled = true;
+        this.dom.generateBtn.disabled = true;
+
+        await this.stopAll();
+
+        await this.api.removeAll(data.cars, data.winners);
+
+        const after = await this.api.getData();
+        if (after) {
+          const leftover = after.winners.filter(
+            (w) => !data.winners.some((x) => x.id === w.id)
+          );
+          if (leftover.length) {
+            await Promise.allSettled(
+              leftover.map((w) => this.api.removeWinner(w.id))
+            );
+          }
+        }
+
+        this.dom.carsList.innerHTML = "";
+        this.dom.tableBody.innerHTML = "";
+        this.dom.carsCount.innerHTML = `<h1>Garage(0)</h1>`;
+        this.dom.winnersCount.innerHTML = `<h1>Winners(0)</h1>`;
+
+        await this.reloadSamePage();
+      } finally {
+        this.isDeletingAll = false;
+        this.suppressWinnerSaves = false;
+
+        this.dom.raceBtn.disabled = false;
+        this.dom.resetBtn.disabled = false;
+        this.dom.createBtn.disabled = false;
+        this.dom.updateBtn.disabled = false;
+        this.dom.deleteAllCarsBtn.disabled = false;
+        this.dom.generateBtn.disabled = false;
+        this.dom.deletingOverlay.classList.remove("show");
+        document.body.removeAttribute("aria-busy");
+      }
     });
 
     this.dom.generateBtn.addEventListener("click", async () => {
@@ -334,8 +398,11 @@ class GarageController {
   }
 
   private async startEngine(id: number, svg: SVGElement) {
+    if (this.isDeletingAll) return;
+
     const html = svg as unknown as HTMLElement;
     const track = html.closest(".raceTrack") as HTMLElement;
+
     const res = await this.api.start(id);
     if (!res) return;
 
@@ -343,31 +410,44 @@ class GarageController {
     html.style.transform = "translateX(0)";
     void html.offsetWidth;
 
-    const maxX = track.clientWidth - carSize - 10;
+    const maxX = track.clientWidth - 50 - 10;
     html.style.transition = `transform 3s linear`;
     html.style.transform = `translateX(${maxX}px)`;
 
-    const start = performance.now();
+    const t0 = performance.now();
+    const ctrl = new AbortController();
+    this.activeDrives.set(id, ctrl);
+
     try {
-      await this.api.drive(id);
-      const timeSec = (performance.now() - start) / 1000;
-      await this.api.persistWinner(id, timeSec);
-      this.showWinner(id, timeSec);
+      await this.api.drive(id, ctrl.signal);
+      const timeSec = (performance.now() - t0) / 1000;
+
+      if (!this.suppressWinnerSaves) {
+        await this.api.persistWinner(id, timeSec);
+        this.showWinner(id, timeSec);
+      }
     } catch {
       const matrix = new DOMMatrixReadOnly(getComputedStyle(html).transform);
       html.style.transition = "none";
       html.style.transform = `translateX(${matrix.m41}px)`;
+    } finally {
+      this.activeDrives.delete(id);
     }
   }
 
   private async stopEngine(id: number, svg: SVGElement) {
     const html = svg as unknown as HTMLElement;
+
+    const ctrl = this.activeDrives.get(id);
+    if (ctrl) ctrl.abort();
+
     html.style.transition = "transform 0.5s ease-out";
     html.style.transform = "translateX(0px)";
     await this.api.stop(id);
   }
 
   private async raceAll() {
+    if (this.isDeletingAll) return;
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
     ) as NodeListOf<HTMLElement>;
@@ -382,6 +462,12 @@ class GarageController {
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
     ) as NodeListOf<HTMLElement>;
+
+    for (const el of Array.from(cards)) {
+      const id = +el.dataset.id!;
+      const ctrl = this.activeDrives.get(id);
+      if (ctrl) ctrl.abort();
+    }
     for (const el of Array.from(cards)) {
       const id = +el.dataset.id!;
       const svg = el.querySelector(".raceTrackCar") as SVGElement;

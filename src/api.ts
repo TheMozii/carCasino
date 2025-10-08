@@ -148,22 +148,7 @@ export const deleteAll = async (
   cars: Array<{ id: number }>,
   winners: Array<{ id: number }>
 ): Promise<void> => {
-  await Promise.all(
-    cars.map(async (c) => {
-      try {
-        await deleteCar(c.id);
-      } catch (e) {
-        console.error("Car DELETE failed:", c.id, e);
-      }
-    })
-  );
-  await Promise.all(
-    winners.map(async (w) => {
-      try {
-        await deleteWinner(Number(w.id));
-      } catch (e) {
-        console.error("Winner DELETE failed:", w.id, e);
-      }
-    })
-  );
+  const carTasks = cars.map((c) => deleteCar(c.id));
+  const winnerTasks = winners.map((w) => deleteWinner(w.id));
+  await Promise.allSettled([...carTasks, ...winnerTasks]);
 };
