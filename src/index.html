@@ -1,9 +1,82 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
   </head>
-  <body></body>
+  <body>
+    <header>
+      <button id="headerButton1" class="headerButton active">TO GARAGE</button>
+      <button id="headerButton2" class="headerButton">TO WINNERS</button>
+    </header>
+    <div class="firstPage">
+      <div class="winnerDisplay"></div>
+      <div class="topNavigation">
+        <div class="topNavigationInputs">
+          <input
+            type="text"
+            class="input"
+            id="createInput"
+            placeholder="Type here..."
+          />
+          <div class="color-wrapper">
+            <div id="colorBox1" class="colorBox"></div>
+            <input type="color" id="colorPicker1" />
+          </div>
+          <button class="btn" id="createBtn">CREATE</button>
+        </div>
+        <div class="topNavigationInputs">
+          <input
+            type="text"
+            class="input"
+            id="updateInput"
+            placeholder="Type here..."
+          />
+          <div class="color-wrapper">
+            <div id="colorBox2" class="colorBox"></div>
+            <input type="color" id="colorPicker2" />
+          </div>
+          <button class="btn" id="updateBtn">UPDATE</button>
+        </div>
+        <div class="topNavigationBottomBtn">
+          <button class="btn" id="raceBtn">RACE</button>
+          <button class="btn" id="resetBtn">RESET</button>
+          <button class="btn" id="generateCarsBtn">GEN</button>
+          <button class="btn" id="deleteAllCarsBtn">DEL</button>
+        </div>
+      </div>
+      <div class="garage">
+        <div class="carsCount"></div>
+        <div class="carsList"></div>
+        <div class="pagination">
+          <button id="prevPage" class="btn">Prev</button>
+          <span id="pageNumber">1</span>
+          <button id="nextPage" class="btn">Next</button>
+        </div>
+      </div>
+    </div>
+    <div class="winners" style="display: none">
+      <div class="winnersCount"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Car</th>
+            <th>Name</th>
+            <th><button class="sortBtn" id="winnersSort">Wins</button></th>
+            <th>
+              <button class="sortBtn" id="timeSort">Best time (seconds)</button>
+            </th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="pagination">
+        <button id="prevPageWinner" class="btn">Prev</button>
+        <span id="pageNumberWinner">1</span>
+        <button id="nextPageWinner" class="btn">Next</button>
+      </div>
+    </div>
+  </body>
 </html>
