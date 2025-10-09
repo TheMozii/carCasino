@@ -124,10 +124,10 @@ class Dom {
   winnersSort = document.getElementById("winnersSort") as HTMLButtonElement;
   timeSort = document.getElementById("timeSort") as HTMLButtonElement;
   winnerDisplay = document.querySelector(".winnerDisplay") as HTMLDivElement;
-  deletingOverlay = (() => {
+  overlay = (() => {
     const el = document.createElement("div");
-    el.className = "overlay-deleting";
-    el.textContent = "Deleting…";
+    el.className = "overlay";
+    el.textContent = "";
     document.body.appendChild(el);
     return el as HTMLDivElement;
   })();
@@ -300,7 +300,8 @@ class GarageController {
       if (this.isDeletingAll) return;
       this.isDeletingAll = true;
       this.suppressWinnerSaves = true;
-      this.dom.deletingOverlay.classList.add("show");
+      this.dom.overlay.textContent = "Deleting…";
+      this.dom.overlay.classList.add("show");
       document.body.setAttribute("aria-busy", "true");
 
       try {
@@ -346,7 +347,7 @@ class GarageController {
         this.dom.updateBtn.disabled = false;
         this.dom.deleteAllCarsBtn.disabled = false;
         this.dom.generateBtn.disabled = false;
-        this.dom.deletingOverlay.classList.remove("show");
+        this.dom.overlay.classList.remove("show");
         document.body.removeAttribute("aria-busy");
       }
     });
@@ -360,7 +361,18 @@ class GarageController {
 
   private bindRace() {
     this.dom.raceBtn.addEventListener("click", () => this.raceAll());
-    this.dom.resetBtn.addEventListener("click", () => this.stopAll());
+    this.dom.resetBtn.addEventListener("click", async () => {
+      this.dom.overlay.textContent = "Reseting all cars…";
+      this.dom.overlay.classList.add("show");
+      document.body.setAttribute("aria-busy", "true");
+
+      try {
+        await this.stopAll();
+      } finally {
+        this.dom.overlay.classList.remove("show");
+        document.body.removeAttribute("aria-busy");
+      }
+    });
   }
 
   private setupWorkingButtons(el: HTMLElement, carId: number, svg: SVGElement) {
@@ -471,6 +483,8 @@ class GarageController {
     for (const el of Array.from(cards)) {
       const id = +el.dataset.id!;
       const svg = el.querySelector(".raceTrackCar") as SVGElement;
+      const winnerAlert = document.querySelector(".winnerAlert") as HTMLElement;
+      if (winnerAlert) winnerAlert.remove();
       await this.stopEngine(id, svg);
     }
   }
