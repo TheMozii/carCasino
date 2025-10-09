@@ -166,7 +166,7 @@ class Paginator {
     this.render();
     this.onChange(this.#page);
   }
-  next() {
+  async next() {
     this.page = this.#page + 1;
   }
   prev() {
@@ -240,6 +240,7 @@ class GarageController {
     sel.addEventListener("click", () => this.onSelect(car));
     rem.addEventListener("click", async () => {
       await this.api.remove(car.id);
+      await this.api.removeWinner(car.id);
       await this.reloadSamePage();
     });
     return el;

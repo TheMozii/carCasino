@@ -140,7 +140,7 @@ header {
 }
 
 .garage {
-  padding-top: 50px;
+  padding-top: 15px;
   padding-left: 10px;
   display: flex;
   flex-direction: column;
