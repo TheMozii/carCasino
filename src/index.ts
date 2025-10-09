@@ -7,7 +7,6 @@ import {
   sortByTime,
   createCar,
   updateCar,
-  deleteCar,
   deleteWinner,
   bulkCreateCars,
   deleteAll,
@@ -235,15 +234,18 @@ class GarageController {
     ${SVG.flag()}
     </div>`;
     const sel = el.querySelector(".select") as HTMLButtonElement;
+    this.onSelect(el, car);
     return el;
   }
 
-  private onSelect(car: Car) {
-    this.selectedCarId = car.id;
-    this.dom.updateInput.value = car.name;
-    this.dom.colorPicker2.value = car.color;
-    this.dom.colorBox2.style.backgroundColor = car.color;
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  private onSelect(el: HTMLDivElement, car: Car) {
+    el.querySelector(".select")?.addEventListener("click", () => {
+      this.selectedCarId = car.id;
+      this.dom.updateInput.value = car.name;
+      this.dom.colorPicker2.value = car.color;
+      this.dom.colorBox2.style.backgroundColor = car.color;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
   }
 
   private bindColorPickers() {
@@ -275,15 +277,22 @@ class GarageController {
     });
 
     this.dom.updateBtn.addEventListener("click", async () => {
-      if (!this.selectedCarId) return;
+      const id = this.selectedCarId;
+      if (!id) return;
       const name = this.dom.updateInput.value.trim();
       const color = this.dom.colorPicker2.value || "#00ff80";
       if (!name) return;
-      await this.api.update(this.selectedCarId, { name, color });
+      await this.api.update(id, { name, color });
       this.selectedCarId = null;
       this.dom.updateInput.value = "";
       this.dom.colorPicker2.value = "#00ff80";
       this.dom.colorBox2.style.backgroundColor = "#00ff80";
+      const c = this.allCars.find((c) => c.id === id);
+      if (c) {
+        c.name = name;
+        c.color = color;
+      }
+      this.refreshWinners();
       await this.reloadSamePage();
     });
 

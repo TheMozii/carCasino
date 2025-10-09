@@ -122,7 +122,7 @@ export const updateCar = async (
   patch: { name: string; color: string }
 ): Promise<void> => {
   const r = await fetch(`${BASE}/garage/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   });
