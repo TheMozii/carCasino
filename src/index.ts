@@ -436,8 +436,10 @@ class GarageController {
 
       if (!this.winnerRecorded && !this.suppressWinnerSaves) {
         this.winnerRecorded = true;
+        const car = this.allCars.find((c) => c.id === id);
+        const label = car?.name ?? `#${id}`;
         await this.api.persistWinner(id, timeSec);
-        this.showWinner(id, timeSec);
+        this.showWinner(label, timeSec);
         this.refreshWinners();
       }
     } catch {
@@ -492,9 +494,9 @@ class GarageController {
     }
   }
 
-  private showWinner(id: number, time: number) {
+  private showWinner(name: string, time: number) {
     const el = this.dom.winnerDisplay;
-    el.innerHTML = `<h1 class="winnerAlert">Winner car #${id} — ${time.toFixed(
+    el.innerHTML = `<h1 class="winnerAlert">Winner ${name} — ${time.toFixed(
       2
     )}s</h1>`;
     el.classList.add("visible");
