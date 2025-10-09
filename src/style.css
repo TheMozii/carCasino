@@ -226,10 +226,7 @@ header {
 
 .raceTrackCar {
   background: none;
-  position: absolute;
   bottom: 1px;
-  transform: translateX(0px);
-  transition: transform linear;
 }
 
 .flag {

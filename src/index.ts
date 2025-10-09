@@ -221,11 +221,11 @@ class GarageController {
     el.className = "car";
     el.dataset.id = String(car.id);
     el.innerHTML = `
-    <div class="carControls">
+    <div class="carElementTopSide">
     <button class="btn select">Select</button>
     <button class="btn remove">Remove</button>
+    <p>${car.name}</p>
     </div>
-    <div class="carTitle">${car.name}</div>
     <div class="workingButtons">
     <button class="workingButton active">A</button>
     <button class="workingButton" disabled>B</button>
@@ -477,7 +477,9 @@ class GarageController {
 
   private showWinner(id: number, time: number) {
     const el = this.dom.winnerDisplay;
-    el.innerHTML = `<span>Winner car #${id} — ${time.toFixed(2)}s</span>`;
+    el.innerHTML = `<h1 class="winnerAlert">Winner car #${id} — ${time.toFixed(
+      2
+    )}s</h1>`;
     el.classList.add("visible");
     clearTimeout(this._winnerTimeout);
     this._winnerTimeout = setTimeout(
