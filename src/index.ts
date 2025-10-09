@@ -184,6 +184,7 @@ class GarageController {
   private isDeletingAll = false;
   private suppressWinnerSaves = false;
   private activeDrives = new Map<number, AbortController>();
+  private winnerRecorded = false;
 
   constructor(private dom: Dom, private api: Api) {}
 
@@ -434,7 +435,8 @@ class GarageController {
       await this.api.drive(id, ctrl.signal);
       const timeSec = (performance.now() - t0) / 1000;
 
-      if (!this.suppressWinnerSaves) {
+      if (!this.winnerRecorded && !this.suppressWinnerSaves) {
+        this.winnerRecorded = true;
         await this.api.persistWinner(id, timeSec);
         this.showWinner(id, timeSec);
       }
@@ -460,6 +462,7 @@ class GarageController {
 
   private async raceAll() {
     if (this.isDeletingAll) return;
+    this.winnerRecorded = false;
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
     ) as NodeListOf<HTMLElement>;
