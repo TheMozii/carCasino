@@ -109,13 +109,12 @@ export interface CarDto {
 
 const BASE = "http://localhost:3000";
 
-export const createCar = async (car: CarDto): Promise<void> => {
-  const r = await fetch(`${BASE}/garage`, {
+export const createCar = async (car: { name: string; color: string }) => {
+  await fetch("http://localhost:3000/garage", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(car),
   });
-  if (!r.ok) throw new Error(await r.text());
 };
 
 export const updateCar = async (

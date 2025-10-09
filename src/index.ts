@@ -66,14 +66,11 @@ class Api {
   async sortTime() {
     return sortByTime();
   }
-  async create(car: CarDto) {
+  async create(car: { name: string; color: string }) {
     return createCar(car);
   }
   async update(id: number, patch: { name: string; color: string }) {
     return updateCar(id, patch);
-  }
-  async remove(id: number) {
-    return deleteCar(id);
   }
   async removeWinner(id: number) {
     return deleteWinner(id);
@@ -185,6 +182,9 @@ class GarageController {
   private suppressWinnerSaves = false;
   private activeDrives = new Map<number, AbortController>();
   private winnerRecorded = false;
+  private refreshWinners() {
+    window.dispatchEvent(new CustomEvent("winners:refresh"));
+  }
 
   constructor(private dom: Dom, private api: Api) {}
 
@@ -224,7 +224,6 @@ class GarageController {
     el.innerHTML = `
     <div class="carElementTopSide">
     <button class="btn select">Select</button>
-    <button class="btn remove">Remove</button>
     <p>${car.name}</p>
     </div>
     <div class="workingButtons">
@@ -236,13 +235,6 @@ class GarageController {
     ${SVG.flag()}
     </div>`;
     const sel = el.querySelector(".select") as HTMLButtonElement;
-    const rem = el.querySelector(".remove") as HTMLButtonElement;
-    sel.addEventListener("click", () => this.onSelect(car));
-    rem.addEventListener("click", async () => {
-      await this.api.remove(car.id);
-      await this.api.removeWinner(car.id);
-      await this.reloadSamePage();
-    });
     return el;
   }
 
@@ -275,10 +267,7 @@ class GarageController {
       const name = this.dom.createInput.value.trim();
       const color = this.dom.colorPicker1.value || "#00ff80";
       if (!name) return;
-      const nextId = this.allCars.length
-        ? this.allCars[this.allCars.length - 1].id + 1
-        : 1;
-      await this.api.create({ id: nextId, name, color });
+      await this.api.create({ name, color });
       this.dom.createInput.value = "";
       this.dom.colorPicker1.value = "#00ff80";
       this.dom.colorBox1.style.backgroundColor = "#00ff80";
@@ -440,6 +429,7 @@ class GarageController {
         this.winnerRecorded = true;
         await this.api.persistWinner(id, timeSec);
         this.showWinner(id, timeSec);
+        this.refreshWinners();
       }
     } catch {
       const matrix = new DOMMatrixReadOnly(getComputedStyle(html).transform);
@@ -663,6 +653,10 @@ class App {
       this.dom.colorPicker1.value || "#00ff80";
     this.dom.colorBox2.style.backgroundColor =
       this.dom.colorPicker2.value || "#00ff80";
+
+    window.addEventListener("winners:refresh", () => {
+      this.winners.load(this.winnersPager.page);
+    });
   }
 
   private setupHeaderSwitching() {
