@@ -6,11 +6,52 @@
     <title>CarArena</title>
   </head>
   <body>
+    <div class="logIn">
+      <div class="logInName">
+        <h1>CarArena</h1>
+      </div>
+      <h2>Log In</h2>
+      <div class="logInBox">
+        <div class="logIninput">
+          <input class="input" placeholder="Unser Name..." />
+          <input class="input" placeholder="Password..." />
+        </div>
+        <div class="logInBtns">
+          <button class="btn">Log In</button>
+          <button class="btn">Sign Up</button>
+        </div>
+      </div>
+    </div>
+    <div class="signUp" style="display: none">
+      <div class="logInName">
+        <h1>CarArena</h1>
+      </div>
+      <h2>Sign Up</h2>
+      <div class="signUpBox">
+        <div class="logIninput">
+          <input type="text" class="input" placeholder="Create User Name..." />
+          <input type="text" class="input" placeholder="Create Password..." />
+        </div>
+        <div class="logInBtns">
+          <button class="btn">Sign Up</button>
+          <button class="btn">Cancel</button>
+        </div>
+      </div>
+    </div>
     <header>
-      <button id="headerButton1" class="headerButton active">TO GARAGE</button>
-      <button id="headerButton2" class="headerButton">TO WINNERS</button>
+      <div class="headerLeftNav">
+        <button id="headerButton1" class="headerButton active">
+          TO GARAGE
+        </button>
+        <button id="headerButton2" class="headerButton">TO WINNERS</button>
+      </div>
+      <h1>CarArena</h1>
+      <div class="headerRightNav">
+        <button class="headerButton">Profile</button>
+        <button class="headerButton">Log Out</button>
+      </div>
     </header>
-    <div class="firstPage">
+    <div class="firstPage" style="display: none">
       <div class="winnerDisplay"></div>
       <div class="topNavigation">
         <div class="topNavigationInputs">

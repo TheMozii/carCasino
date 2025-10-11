@@ -207,11 +207,7 @@ class GarageController {
     const slice = this.allCars.slice(start, page * carsPerPage);
     slice.forEach((car) => {
       const el = this.createCarElement(car);
-      this.setupWorkingButtons(
-        el,
-        car.id,
-        el.querySelector(".raceTrackCar") as SVGElement
-      );
+      this.setupWorkingButtons(el);
       this.dom.carsList.appendChild(el);
     });
   }
@@ -225,10 +221,7 @@ class GarageController {
     <button class="btn select">Select</button>
     <p>${car.name}</p>
     </div>
-    <div class="workingButtons">
-    <button class="workingButton active">A</button>
-    <button class="workingButton" disabled>B</button>
-    </div>
+    <button class="workingButton active">Choose</button>
     <div class="raceTrack">
     ${SVG.car(car.color, carSize)}
     ${SVG.flag()}
@@ -375,37 +368,17 @@ class GarageController {
     });
   }
 
-  private setupWorkingButtons(el: HTMLElement, carId: number, svg: SVGElement) {
-    const buttons = el.querySelectorAll(
-      ".workingButton"
-    ) as NodeListOf<HTMLButtonElement>;
-    const buttonA = buttons[0];
-    const buttonB = buttons[1];
+  private setupWorkingButtons(el: HTMLElement) {
+    const button = el.querySelector(".workingButton") as HTMLButtonElement;
 
-    const setUI = (aActive: boolean) => {
-      if (aActive) {
-        buttonB.classList.add("active");
-        buttonA.classList.remove("active");
-        buttonA.disabled = true;
-        buttonB.disabled = false;
+    button.addEventListener("click", () => {
+      if (button.classList.contains("active")) {
+        button.classList.remove("active");
+        button.textContent = "Chosen";
       } else {
-        buttonA.classList.add("active");
-        buttonB.classList.remove("active");
-        buttonB.disabled = true;
-        buttonA.disabled = false;
+        button.classList.add("active");
+        button.textContent = "Choose";
       }
-    };
-
-    buttonA.addEventListener("click", async () => {
-      if (buttonB.classList.contains("active")) return;
-      setUI(true);
-      await this.startEngine(carId, svg);
-    });
-
-    buttonB.addEventListener("click", async () => {
-      if (buttonA.classList.contains("active")) return;
-      setUI(false);
-      await this.stopEngine(carId, svg);
     });
   }
 
