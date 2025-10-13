@@ -721,16 +721,38 @@ class WinnersController {
     });
   }
 
-  private setSortArrow(btn: HTMLButtonElement, dir: "asc" | "desc") {
+  private setSortArrow(
+    btn: HTMLButtonElement,
+    dir: "asc" | "desc",
+    col: string
+  ) {
     btn.classList.remove("up", "down");
     btn.classList.add(dir === "asc" ? "up" : "down");
+    btn.innerHTML =
+      dir === "asc"
+        ? `${
+            col === "wins" ? "Wins" : "Best time (seconds)"
+          } <svg class="arrow" width="16px" height="16px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 5H3L3 16H5L5 5L8 5V4L4 0L0 4V5Z" fill="#000000"/>
+        <path d="M16 16H10V14H16V16Z" fill="#000000"/>
+        <path d="M10 12H14V10H10V12Z" fill="#000000"/>
+        <path d="M12 8H10V6H12V8Z" fill="#000000"/>
+      </svg>`
+        : `${
+            col === "wins" ? "Wins" : "Best time (seconds)"
+          } <svg class="arrow" width="16px" height="16px" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 11H3L3 0H5L5 11H8V12L4 16L0 12V11Z" fill="#000000"/>
+        <path d="M16 0H10V2H16V0Z" fill="#000000"/>
+        <path d="M10 4H14V6H10V4Z" fill="#000000"/>
+        <path d="M12 8H10V10H12V8Z" fill="#000000"/>
+      </svg>`;
   }
 
   private async toggleWinsSort() {
     const newDir = this.dom.winnersSort.classList.contains("up")
       ? "desc"
       : "asc";
-    this.setSortArrow(this.dom.winnersSort, newDir);
+    this.setSortArrow(this.dom.winnersSort, newDir, "wins");
     const data = await this.api.getData();
     const sorted = await this.api.sortWins();
     if (!data || !sorted) return;
@@ -742,7 +764,7 @@ class WinnersController {
 
   private async toggleTimeSort() {
     const newDir = this.dom.timeSort.classList.contains("up") ? "desc" : "asc";
-    this.setSortArrow(this.dom.timeSort, newDir);
+    this.setSortArrow(this.dom.timeSort, newDir, "time");
     const data = await this.api.getData();
     const sorted = await this.api.sortTime();
     if (!data || !sorted) return;
