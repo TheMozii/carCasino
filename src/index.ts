@@ -144,11 +144,6 @@ class Dom {
     document.body.appendChild(el);
     return el as HTMLDivElement;
   })();
-  restartBtns() {
-    const headerBtns = document.querySelectorAll(".headerButton");
-    headerBtns.forEach((b) => b.classList.remove("active"));
-    headerBtns[0].classList.add("active");
-  }
 }
 
 const SVG = {
@@ -252,7 +247,7 @@ class Profile {
         this.dom.overlay.classList.remove("show");
         document.body.removeAttribute("aria-busy");
       }
-      this.dom.restartBtns();
+      window.location.reload();
       this.dom.profile.style.display = "none";
       this.dom.profileBox.style.display = "none";
       this.dom.alertBox.style.display = "none";
@@ -342,7 +337,7 @@ class GarageController {
         this.dom.overlay.classList.remove("show");
         document.body.removeAttribute("aria-busy");
       }
-      this.dom.restartBtns();
+      window.location.reload();
       this.dom.firstPage.style.display = "none";
       this.dom.signUp.style.display = "none";
       this.dom.winners.style.display = "none";
