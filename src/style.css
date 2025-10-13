@@ -33,6 +33,10 @@ header {
   transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
 }
 
+.headerButton:hover {
+  background-color: #00ff80;
+}
+
 .headerButton.active {
   background-color: #ffff00;
 }
@@ -349,7 +353,7 @@ header h1 {
   height: 100%;
   background: #3b0f4c;
   display: flex;
-  z-index: 4;
+  z-index: 5;
   align-items: center;
   justify-content: center;
   flex-direction: column;
@@ -416,15 +420,12 @@ h2 {
   height: 100%;
   background: #3b0f4c;
   display: flex;
-  z-index: 5;
+  z-index: 4;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   gap: 5px;
   position: absolute;
-}
-
-.signUp h1 {
 }
 
 .signUpBox {
@@ -437,4 +438,116 @@ h2 {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+}
+
+.headerButtonRight {
+  width: 100%;
+  font-size: 0.8em;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  box-shadow: 0 4px 0 #5678ff;
+  background-color: #ff3333;
+  color: black;
+  transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+}
+
+.headerButtonRight:hover {
+  background-color: #00ff80;
+}
+
+.headerButtonRight.active {
+  background-color: #ffff00;
+}
+
+.headerButtonRight:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+.profile {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileBox {
+  width: 20%;
+  border: 2px solid #ffff;
+  background-color: #00ff80;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#profExBtn {
+  position: absolute;
+  right: 30%;
+  top: 30%;
+}
+
+#delAcc {
+  position: absolute;
+  left: 30%;
+  top: 30%;
+}
+
+.profileName {
+  width: 100%;
+  background: #00ff80;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+}
+
+.score {
+  width: 100%;
+  background: #00ff80;
+  display: flex;
+  align-items: start;
+  justify-content: start;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profileBox h2 {
+  color: #000;
+  background: #00ff80;
+}
+
+.alertBox {
+  width: 20%;
+  border: 2px solid #ffff;
+  background-color: #00ff80;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.alertBox h1 {
+  width: 100%;
+  color: #000;
+  background: #00ff80;
+  display: flex;
+  justify-content: center;
+}
+
+.alertBox div {
+  background: #00ff80;
 }

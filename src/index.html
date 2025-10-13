@@ -17,8 +17,8 @@
           <input class="input" placeholder="Password..." />
         </div>
         <div class="logInBtns">
-          <button class="btn">Log In</button>
-          <button class="btn">Sign Up</button>
+          <button class="btn" id="logInBtn">Log In</button>
+          <button class="btn" id="logSignUpBtn">Sign Up</button>
         </div>
       </div>
     </div>
@@ -33,8 +33,8 @@
           <input type="text" class="input" placeholder="Create Password..." />
         </div>
         <div class="logInBtns">
-          <button class="btn">Sign Up</button>
-          <button class="btn">Cancel</button>
+          <button class="btn" id="signUpBtn">Sign Up</button>
+          <button class="btn" id="cancelBtn">Cancel</button>
         </div>
       </div>
     </div>
@@ -47,8 +47,28 @@
       </div>
       <h1>CarArena</h1>
       <div class="headerRightNav">
-        <button class="headerButton">Profile</button>
-        <button class="headerButton">Log Out</button>
+        <button class="headerButtonRight" id="profBtn">Profile</button>
+        <button class="headerButtonRight" id="logOut">Log Out</button>
+      </div>
+      <div class="profile" style="display: none">
+        <div class="profileBox">
+          <button class="btn" id="delAcc">Delete</button>
+          <button class="btn" id="profExBtn">X</button>
+          <div class="profileName">
+            <h2>User Name: Name1</h2>
+          </div>
+          <div class="score">
+            <h2>Your wins: 0</h2>
+            <h2>Your loses: 0</h2>
+          </div>
+        </div>
+        <div class="alertBox" style="display: none">
+          <h1>Are you shore?</h1>
+          <div>
+            <button class="btn" id="alertYes">Yes</button>
+            <button class="btn" id="alertNo">No</button>
+          </div>
+        </div>
       </div>
     </header>
     <div class="firstPage" style="display: none">

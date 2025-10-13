@@ -120,6 +120,23 @@ class Dom {
   winnersSort = document.getElementById("winnersSort") as HTMLButtonElement;
   timeSort = document.getElementById("timeSort") as HTMLButtonElement;
   winnerDisplay = document.querySelector(".winnerDisplay") as HTMLDivElement;
+  logInBtn = document.getElementById("logInBtn") as HTMLButtonElement;
+  firstPage = document.querySelector(".firstPage") as HTMLDivElement;
+  signUp = document.querySelector(".signUp") as HTMLDivElement;
+  logIn = document.querySelector(".logIn") as HTMLDivElement;
+  logSignUpBtn = document.getElementById("logSignUpBtn") as HTMLButtonElement;
+  cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
+  signUpBtn = document.getElementById("signUpBtn") as HTMLButtonElement;
+  logOut = document.getElementById("logOut") as HTMLButtonElement;
+  winners = document.querySelector(".winners") as HTMLDivElement;
+  profExBtn = document.getElementById("profExBtn") as HTMLButtonElement;
+  profile = document.querySelector(".profile") as HTMLDivElement;
+  profBtn = document.getElementById("profBtn") as HTMLButtonElement;
+  delAcc = document.getElementById("delAcc") as HTMLButtonElement;
+  alertBox = document.querySelector(".alertBox") as HTMLDivElement;
+  profileBox = document.querySelector(".profileBox") as HTMLDivElement;
+  alertYes = document.getElementById("alertYes") as HTMLButtonElement;
+  alertNo = document.getElementById("alertNo") as HTMLButtonElement;
   overlay = (() => {
     const el = document.createElement("div");
     el.className = "overlay";
@@ -141,6 +158,101 @@ const SVG = {
   </svg>`;
   },
 };
+
+class LogIn {
+  constructor(private dom: Dom, private api: Api) {}
+
+  init() {
+    this.logInAcc();
+    this.logInSignUp();
+  }
+
+  private logInAcc() {
+    this.dom.logInBtn.addEventListener("click", () => {
+      this.dom.firstPage.style.display = "flex";
+      this.dom.signUp.style.display = "none";
+      this.dom.logIn.style.display = "none";
+    });
+  }
+
+  private logInSignUp() {
+    this.dom.logSignUpBtn.addEventListener("click", () => {
+      this.dom.signUp.style.display = "flex";
+      this.dom.logIn.style.display = "none";
+    });
+  }
+}
+
+class SignUp {
+  constructor(private dom: Dom, private api: Api) {}
+
+  init() {
+    this.cancel();
+    this.signUp();
+  }
+
+  private cancel() {
+    this.dom.cancelBtn.addEventListener("click", () => {
+      this.dom.signUp.style.display = "none";
+      this.dom.logIn.style.display = "flex";
+    });
+  }
+
+  private signUp() {
+    this.dom.signUpBtn.addEventListener("click", () => {
+      this.dom.firstPage.style.display = "flex";
+      this.dom.signUp.style.display = "none";
+      this.dom.logIn.style.display = "none";
+    });
+  }
+}
+
+class Profile {
+  constructor(private dom: Dom, private api: Api) {}
+
+  init() {
+    this.open();
+    this.exit();
+    this.delProf();
+    this.alertYes();
+    this.alertNo();
+  }
+  private open() {
+    this.dom.profBtn.addEventListener("click", () => {
+      this.dom.profile.style.display = "flex";
+    });
+  }
+  private exit() {
+    this.dom.profExBtn.addEventListener("click", () => {
+      this.dom.profile.style.display = "none";
+    });
+  }
+
+  private delProf() {
+    this.dom.delAcc.addEventListener("click", () => {
+      this.dom.alertBox.style.display = "flex";
+      this.dom.profileBox.style.display = "none";
+    });
+  }
+
+  private alertYes() {
+    this.dom.alertYes.addEventListener("click", () => {
+      this.dom.profile.style.display = "none";
+      this.dom.profileBox.style.display = "none";
+      this.dom.alertBox.style.display = "none";
+      this.dom.firstPage.style.display = "none";
+      this.dom.signUp.style.display = "none";
+      this.dom.logIn.style.display = "flex";
+    });
+  }
+
+  private alertNo() {
+    this.dom.alertNo.addEventListener("click", () => {
+      this.dom.alertBox.style.display = "none";
+      this.dom.profileBox.style.display = "flex";
+    });
+  }
+}
 
 class Paginator {
   #page = 1;
@@ -191,6 +303,7 @@ class GarageController {
     this.bindColorPickers();
     this.bindCrud();
     this.bindRace();
+    this.logOut();
   }
 
   async load(page = 1) {
@@ -199,6 +312,15 @@ class GarageController {
     this.allCars = data.cars;
     this.dom.carsCount.innerHTML = `<h1>Garage(${this.allCars.length})</h1>`;
     this.render(page);
+  }
+
+  private logOut() {
+    this.dom.logOut.addEventListener("click", () => {
+      this.dom.firstPage.style.display = "none";
+      this.dom.signUp.style.display = "none";
+      this.dom.winners.style.display = "none";
+      this.dom.logIn.style.display = "flex";
+    });
   }
 
   private render(page: number) {
@@ -607,6 +729,9 @@ class WinnersController {
 class App {
   private api = new Api();
   private dom = new Dom();
+  private logIn = new LogIn(this.dom, this.api);
+  private signUp = new SignUp(this.dom, this.api);
+  private profile = new Profile(this.dom, this.api);
   private garage = new GarageController(this.dom, this.api);
   private winners = new WinnersController(this.dom, this.api);
   private garagePager!: Paginator;
@@ -616,6 +741,9 @@ class App {
     this.setupHeaderSwitching();
     this.garage.init();
     this.winners.init();
+    this.logIn.init();
+    this.signUp.init();
+    this.profile.init();
 
     this.garagePager = new Paginator(
       this.dom.btnPrev,
