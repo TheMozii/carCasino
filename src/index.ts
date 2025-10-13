@@ -144,6 +144,11 @@ class Dom {
     document.body.appendChild(el);
     return el as HTMLDivElement;
   })();
+  restartBtns() {
+    const headerBtns = document.querySelectorAll(".headerButton");
+    headerBtns.forEach((b) => b.classList.remove("active"));
+    headerBtns[0].classList.add("active");
+  }
 }
 
 const SVG = {
@@ -217,6 +222,7 @@ class Profile {
     this.alertYes();
     this.alertNo();
   }
+
   private open() {
     this.dom.profBtn.addEventListener("click", () => {
       this.dom.profile.style.display = "flex";
@@ -236,7 +242,17 @@ class Profile {
   }
 
   private alertYes() {
-    this.dom.alertYes.addEventListener("click", () => {
+    this.dom.alertYes.addEventListener("click", async () => {
+      this.dom.overlay.textContent = "deliting";
+      this.dom.overlay.classList.add("show");
+      document.body.setAttribute("aria-busy", "true");
+
+      try {
+      } finally {
+        this.dom.overlay.classList.remove("show");
+        document.body.removeAttribute("aria-busy");
+      }
+      this.dom.restartBtns();
       this.dom.profile.style.display = "none";
       this.dom.profileBox.style.display = "none";
       this.dom.alertBox.style.display = "none";
@@ -315,7 +331,18 @@ class GarageController {
   }
 
   private logOut() {
-    this.dom.logOut.addEventListener("click", () => {
+    this.dom.logOut.addEventListener("click", async () => {
+      this.dom.overlay.textContent = "Exiting…";
+      this.dom.overlay.classList.add("show");
+      document.body.setAttribute("aria-busy", "true");
+
+      try {
+        await this.stopAll();
+      } finally {
+        this.dom.overlay.classList.remove("show");
+        document.body.removeAttribute("aria-busy");
+      }
+      this.dom.restartBtns();
       this.dom.firstPage.style.display = "none";
       this.dom.signUp.style.display = "none";
       this.dom.winners.style.display = "none";
