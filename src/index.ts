@@ -1,5 +1,6 @@
 import "./style.css";
 import {
+  auth,
   getData,
   changeEngineStatus,
   saveWinner,
@@ -137,6 +138,14 @@ class Dom {
   profileBox = document.querySelector(".profileBox") as HTMLDivElement;
   alertYes = document.getElementById("alertYes") as HTMLButtonElement;
   alertNo = document.getElementById("alertNo") as HTMLButtonElement;
+  userNameInput = document.getElementById("userNameInput") as HTMLInputElement;
+  userPassInput = document.getElementById("userPassInput") as HTMLInputElement;
+  singUpUserNameInput = document.getElementById(
+    "singUpUserNameInput"
+  ) as HTMLInputElement;
+  singUpUserPassInput = document.getElementById(
+    "singUpUserPassInput"
+  ) as HTMLInputElement;
   overlay = (() => {
     const el = document.createElement("div");
     el.className = "overlay";
@@ -161,6 +170,8 @@ const SVG = {
 
 class LogIn {
   constructor(private dom: Dom, private api: Api) {}
+  private garage = new GarageController(this.dom, this.api);
+  private winners = new WinnersController(this.dom, this.api);
 
   init() {
     this.logInAcc();
@@ -168,11 +179,40 @@ class LogIn {
   }
 
   private logInAcc() {
-    this.dom.logInBtn.addEventListener("click", () => {
-      this.dom.firstPage.style.display = "flex";
-      this.dom.signUp.style.display = "none";
-      this.dom.logIn.style.display = "none";
+    (async () => {
+      const { user } = await auth.current();
+      if (user) {
+        this.showMainPage();
+      }
+    })();
+
+    this.dom.logInBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const username = this.dom.userNameInput?.value.trim();
+      const password = this.dom.userPassInput?.value.trim();
+
+      if (!username || !password) {
+        alert("Please enter both username and password.");
+        return;
+      }
+
+      try {
+        await auth.login(username, password);
+        this.showMainPage();
+      } catch (err) {
+        console.error(err);
+        alert("Invalid username or password.");
+      }
     });
+  }
+
+  private showMainPage() {
+    this.dom.firstPage.style.display = "flex";
+    this.dom.signUp.style.display = "none";
+    this.dom.logIn.style.display = "none";
+    this.garage.load(1);
+    this.winners.load(1);
   }
 
   private logInSignUp() {
@@ -185,10 +225,20 @@ class LogIn {
 
 class SignUp {
   constructor(private dom: Dom, private api: Api) {}
+  private garage = new GarageController(this.dom, this.api);
+  private winners = new WinnersController(this.dom, this.api);
+
+  private showMainPage() {
+    this.dom.firstPage.style.display = "flex";
+    this.dom.signUp.style.display = "none";
+    this.dom.logIn.style.display = "none";
+    this.garage.load(1);
+    this.winners.load(1);
+  }
 
   init() {
     this.cancel();
-    this.signUp();
+    this.signUpAcc();
   }
 
   private cancel() {
@@ -198,11 +248,26 @@ class SignUp {
     });
   }
 
-  private signUp() {
-    this.dom.signUpBtn.addEventListener("click", () => {
-      this.dom.firstPage.style.display = "flex";
-      this.dom.signUp.style.display = "none";
-      this.dom.logIn.style.display = "none";
+  private signUpAcc() {
+    this.dom.signUpBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const username = this.dom.singUpUserNameInput?.value.trim();
+      const password = this.dom.singUpUserPassInput?.value.trim();
+
+      if (!username || !password) {
+        alert("Please enter username and password.");
+        return;
+      }
+
+      try {
+        await auth.signup(username, password);
+        await auth.login(username, password);
+        this.showMainPage();
+      } catch (err) {
+        console.error(err);
+        alert("Username already exists or signup failed.");
+      }
     });
   }
 }
@@ -327,6 +392,7 @@ class GarageController {
 
   private logOut() {
     this.dom.logOut.addEventListener("click", async () => {
+      const btns = document.querySelectorAll(".headerButton");
       this.dom.overlay.textContent = "Exiting…";
       this.dom.overlay.classList.add("show");
       document.body.setAttribute("aria-busy", "true");
@@ -337,7 +403,9 @@ class GarageController {
         this.dom.overlay.classList.remove("show");
         document.body.removeAttribute("aria-busy");
       }
-      window.location.reload();
+      await auth.logout();
+      btns.forEach((b) => b.classList.remove("active"));
+      btns[0].classList.add("active");
       this.dom.firstPage.style.display = "none";
       this.dom.signUp.style.display = "none";
       this.dom.winners.style.display = "none";
@@ -406,10 +474,13 @@ class GarageController {
       const name = this.dom.createInput.value.trim();
       const color = this.dom.colorPicker1.value || "#00ff80";
       if (!name) return;
+
       await this.api.create({ name, color });
+
       this.dom.createInput.value = "";
       this.dom.colorPicker1.value = "#00ff80";
       this.dom.colorBox1.style.backgroundColor = "#00ff80";
+
       await this.reloadSamePage();
     });
 
@@ -491,7 +562,7 @@ class GarageController {
 
     this.dom.generateBtn.addEventListener("click", async () => {
       const cars = this.generateRandomCars(5);
-      await this.api.bulkCreate(cars);
+      await bulkCreateCars(cars);
       await this.reloadSamePage();
     });
   }
@@ -624,7 +695,9 @@ class GarageController {
     );
   }
 
-  private generateRandomCars(n: number): CarDto[] {
+  private generateRandomCars(
+    n: number
+  ): Array<{ name: string; color: string }> {
     const names = [
       "Tesla",
       "BMW",
@@ -651,16 +724,13 @@ class GarageController {
       "#aa00ff",
       "#ff0066",
     ];
-    let id = this.allCars.length
-      ? this.allCars[this.allCars.length - 1].id + 1
-      : 1;
-    const cars: CarDto[] = [];
+    const cars: Array<{ name: string; color: string }> = [];
     for (let i = 0; i < n; i++) {
-      const name = `${names[Math.floor(Math.random() * names.length)]} ${
-        Math.floor(Math.random() * 900) + 100
+      const name = `${names[(Math.random() * names.length) | 0]} ${
+        (Math.random() * 900 + 100) | 0
       }`;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      cars.push({ id: id++, name, color });
+      const color = colors[(Math.random() * colors.length) | 0];
+      cars.push({ name, color });
     }
     return cars;
   }
@@ -781,7 +851,7 @@ class App {
   private garagePager!: Paginator;
   private winnersPager!: Paginator;
 
-  init() {
+  async init() {
     this.setupHeaderSwitching();
     this.garage.init();
     this.winners.init();

@@ -1,38 +1,33 @@
-interface EngineStatus {
-  velocity: number;
-  distance: number;
+const BASE = "http://localhost:3000";
+
+export interface CarDto {
+  id: number;
+  name: string;
+  color: string;
 }
+
 export const getData = async () => {
-  try {
-    const [carsRes, winnersRes] = await Promise.all([
-      fetch("http://localhost:3000/garage"),
-      fetch("http://localhost:3000/winners"),
-    ]);
-    if (!carsRes.ok || !winnersRes.ok) throw new Error("Fetch failed");
-    const cars = await carsRes.json();
-    const winners = await winnersRes.json();
-    return { cars, winners };
-  } catch {
-    return null;
-  }
+  const [cars, winners] = await Promise.all([
+    (await apiFetch(`${BASE}/garage`)).json(),
+    (await apiFetch(`${BASE}/winners`)).json(),
+  ]);
+  return { cars, winners } as {
+    cars: Array<{ id: number; name: string; color: string }>;
+    winners: Array<{ id: number; userId: number; wins: number; time: number }>;
+  };
 };
 
 export const changeEngineStatus = async (
   id: number,
-  status: "started" | "stopped" | "drive"
-): Promise<EngineStatus | null> => {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/engine?id=${id}&status=${status}`,
-      {
-        method: "PATCH",
-      }
-    );
-    if (!res.ok) throw new Error(await res.text());
-    return await res.json();
-  } catch {
-    return null;
-  }
+  status: "started" | "stopped" | "drive",
+  signal?: AbortSignal
+) => {
+  const r = await apiFetch(`${BASE}/engine?id=${id}&status=${status}`, {
+    method: "PATCH",
+    signal,
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json().catch(() => ({}));
 };
 
 export const saveWinner = async (id: number, time: number): Promise<void> => {
@@ -101,16 +96,8 @@ export const sortByTime = async () => {
   }
 };
 
-export interface CarDto {
-  id: number;
-  name: string;
-  color: string;
-}
-
-const BASE = "http://localhost:3000";
-
 export const createCar = async (car: { name: string; color: string }) => {
-  await fetch("http://localhost:3000/garage", {
+  await apiFetch(`${BASE}/garage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(car),
@@ -119,35 +106,74 @@ export const createCar = async (car: { name: string; color: string }) => {
 
 export const updateCar = async (
   id: number,
-  patch: { name: string; color: string }
-): Promise<void> => {
-  const r = await fetch(`${BASE}/garage/${id}`, {
+  patch: Partial<{ name: string; color: string }>
+) => {
+  const r = await apiFetch(`${BASE}/garage/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   });
   if (!r.ok) throw new Error(await r.text());
+  return r.json().catch(() => undefined);
 };
 
-export const deleteCar = async (id: number): Promise<void> => {
-  const r = await fetch(`${BASE}/garage/${id}`, { method: "DELETE" });
-  if (!r.ok) throw new Error(await r.text());
+export const deleteCar = async (id: number) => {
+  await apiFetch(`${BASE}/garage/${id}`, { method: "DELETE" });
 };
 
-export const deleteWinner = async (id: number): Promise<void> => {
-  const r = await fetch(`${BASE}/winners/${id}`, { method: "DELETE" });
-  if (!r.ok) throw new Error(await r.text());
+export const deleteWinner = async (id: number) => {
+  await apiFetch(`${BASE}/winners/${id}`, { method: "DELETE" });
 };
 
-export const bulkCreateCars = async (cars: CarDto[]): Promise<void> => {
-  await Promise.all(cars.map((c) => createCar(c)));
+export const bulkCreateCars = async (
+  cars: Array<{ name: string; color: string }>
+) => {
+  await Promise.all(cars.map(createCar));
 };
 
 export const deleteAll = async (
   cars: Array<{ id: number }>,
   winners: Array<{ id: number }>
-): Promise<void> => {
-  const carTasks = cars.map((c) => deleteCar(c.id));
-  const winnerTasks = winners.map((w) => deleteWinner(w.id));
-  await Promise.allSettled([...carTasks, ...winnerTasks]);
+) => {
+  await Promise.allSettled([
+    ...cars.map((c) => deleteCar(c.id)),
+    ...winners.map((w) => deleteWinner(w.id)),
+  ]);
+};
+
+const apiFetch = async (url: string, init?: RequestInit) => {
+  const r = await fetch(url, init);
+  if (r.status === 401) {
+    window.dispatchEvent(new Event("auth:required"));
+    throw new Error("Not logged in");
+  }
+  return r;
+};
+
+export const auth = {
+  current: async () =>
+    (await apiFetch(`${BASE}/auth/current`)).json() as Promise<{
+      user: { id: number; username: string } | null;
+    }>,
+
+  login: async (username: string, password: string) =>
+    (
+      await apiFetch(`${BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      })
+    ).json(),
+
+  signup: async (username: string, password: string) =>
+    (
+      await apiFetch(`${BASE}/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      })
+    ).json(),
+
+  logout: async () =>
+    (await apiFetch(`${BASE}/auth/logout`, { method: "POST" })).json(),
 };
