@@ -11,6 +11,8 @@ import {
   deleteWinner,
   bulkCreateCars,
   deleteAll,
+  getMyStats,
+  reportRaceGuess,
   type CarDto,
 } from "./api";
 
@@ -95,9 +97,6 @@ class Dom {
   createBtn = document.getElementById("createBtn") as HTMLButtonElement;
   updateBtn = document.getElementById("updateBtn") as HTMLButtonElement;
   generateBtn = document.getElementById("generateCarsBtn") as HTMLButtonElement;
-  deleteAllCarsBtn = document.getElementById(
-    "deleteAllCarsBtn"
-  ) as HTMLButtonElement;
   raceBtn = document.getElementById("raceBtn") as HTMLButtonElement;
   resetBtn = document.getElementById("resetBtn") as HTMLButtonElement;
   createInput = document.getElementById("createInput") as HTMLInputElement;
@@ -115,9 +114,6 @@ class Dom {
   tableBody = document.querySelector("tbody") as HTMLTableSectionElement;
   btnPrevW = document.getElementById("prevPageWinner") as HTMLButtonElement;
   btnNextW = document.getElementById("nextPageWinner") as HTMLButtonElement;
-  pageNumberWinner = document.getElementById(
-    "pageNumberWinner"
-  ) as HTMLSpanElement;
   winnersSort = document.getElementById("winnersSort") as HTMLButtonElement;
   timeSort = document.getElementById("timeSort") as HTMLButtonElement;
   winnerDisplay = document.querySelector(".winnerDisplay") as HTMLDivElement;
@@ -140,6 +136,15 @@ class Dom {
   alertNo = document.getElementById("alertNo") as HTMLButtonElement;
   userNameInput = document.getElementById("userNameInput") as HTMLInputElement;
   userPassInput = document.getElementById("userPassInput") as HTMLInputElement;
+  userName = document.getElementById("userName") as HTMLHeadElement;
+  userWins = document.getElementById("userWins") as HTMLHeadElement;
+  userLoses = document.getElementById("userLoses") as HTMLHeadElement;
+  pageNumberWinner = document.getElementById(
+    "pageNumberWinner"
+  ) as HTMLSpanElement;
+  deleteAllCarsBtn = document.getElementById(
+    "deleteAllCarsBtn"
+  ) as HTMLButtonElement;
   singUpUserNameInput = document.getElementById(
     "singUpUserNameInput"
   ) as HTMLInputElement;
@@ -211,6 +216,18 @@ class LogIn {
     this.dom.firstPage.style.display = "flex";
     this.dom.signUp.style.display = "none";
     this.dom.logIn.style.display = "none";
+    (async () => {
+      const { user } = await auth.current();
+      const stats = await getMyStats();
+      if (user) {
+        const username = user.username ?? null;
+        const wins = stats.wins ?? null;
+        const loses = stats.losses ?? null;
+        this.dom.userName.textContent = `User Name: ${username}`;
+        this.dom.userWins.textContent = `Your wins: ${wins}`;
+        this.dom.userLoses.textContent = `Your loses: ${loses}`;
+      }
+    })();
     this.garage.load(1);
     this.winners.load(1);
   }
@@ -871,6 +888,14 @@ class App {
       this.dom.pageNumberWinner,
       (p) => this.winners.load(p)
     );
+
+    const { user } = await auth.current();
+    if (!user) {
+      this.dom.firstPage.style.display = "none";
+      this.dom.logIn.style.display = "flex";
+      this.dom.signUp.style.display = "flex";
+      return;
+    }
 
     this.garage.load(1);
     this.winners.load(1);

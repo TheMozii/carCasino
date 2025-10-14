@@ -177,3 +177,21 @@ export const auth = {
   logout: async () =>
     (await apiFetch(`${BASE}/auth/logout`, { method: "POST" })).json(),
 };
+
+export const getMyStats = async () =>
+  (await apiFetch(`${BASE}/stats/me`)).json() as Promise<{
+    wins: number;
+    losses: number;
+  }>;
+
+export const reportRaceGuess = async (
+  chosenCarId: number,
+  winnerCarId: number
+) =>
+  (
+    await apiFetch(`${BASE}/stats/result`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chosenCarId, winnerCarId }),
+    })
+  ).json() as Promise<{ correct: boolean; wins: number; losses: number }>;
