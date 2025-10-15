@@ -613,10 +613,6 @@ class GarageController {
         if (btn.classList.contains("active")) {
           btn.classList.remove("active");
           btn.textContent = "Chosen";
-          console.log("btn");
-        } else {
-          btn.classList.add("active");
-          btn.textContent = "Choose";
         }
       });
     });

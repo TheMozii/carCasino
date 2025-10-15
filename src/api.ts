@@ -58,18 +58,16 @@ export const saveWinner = async (id: number, time: number): Promise<void> => {
 
 export const sortByWins = async () => {
   try {
-    const [sortAscWins, sortDescWins] = await Promise.all([
-      fetch("http://localhost:3000/winners?_sort=wins&_order=asc", {
-        method: "GET",
-      }),
-      fetch("http://localhost:3000/winners?_sort=wins&_order=desc", {
-        method: "GET",
-      }),
-    ]);
-
-    if (!sortAscWins.ok || !sortDescWins.ok) throw new Error("Fetch failed");
-    const ascWins = await sortAscWins.json();
-    const descWins = await sortDescWins.json();
+    const r = await apiFetch(`${BASE}/winners`);
+    if (!r.ok) throw new Error("Fetch failed");
+    const winners: Array<{
+      id: number;
+      userId: number;
+      wins: number;
+      time: number;
+    }> = await r.json();
+    const ascWins = [...winners].sort((a, b) => a.wins - b.wins);
+    const descWins = [...winners].sort((a, b) => b.wins - a.wins);
     return { ascWins, descWins };
   } catch {
     return null;
@@ -78,18 +76,16 @@ export const sortByWins = async () => {
 
 export const sortByTime = async () => {
   try {
-    const [sortAscTime, sortDescTime] = await Promise.all([
-      fetch("http://localhost:3000/winners?_sort=time&_order=asc", {
-        method: "GET",
-      }),
-      fetch("http://localhost:3000/winners?_sort=time&_order=desc", {
-        method: "GET",
-      }),
-    ]);
-
-    if (!sortAscTime.ok || !sortDescTime.ok) throw new Error("Fetch failed");
-    const ascTime = await sortAscTime.json();
-    const descTime = await sortDescTime.json();
+    const r = await apiFetch(`${BASE}/winners`);
+    if (!r.ok) throw new Error("Fetch failed");
+    const winners: Array<{
+      id: number;
+      userId: number;
+      wins: number;
+      time: number;
+    }> = await r.json();
+    const ascTime = [...winners].sort((a, b) => a.time - b.time);
+    const descTime = [...winners].sort((a, b) => b.time - a.time);
     return { ascTime, descTime };
   } catch {
     return null;
