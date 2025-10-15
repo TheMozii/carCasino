@@ -436,8 +436,8 @@ class GarageController {
     const slice = this.allCars.slice(start, page * carsPerPage);
     slice.forEach((car) => {
       const el = this.createCarElement(car);
-      this.setupWorkingButtons(el);
       this.dom.carsList.appendChild(el);
+      this.setupWorkingButtons();
     });
   }
 
@@ -455,7 +455,6 @@ class GarageController {
     ${SVG.car(car.color, carSize)}
     ${SVG.flag()}
     </div>`;
-    const sel = el.querySelector(".select") as HTMLButtonElement;
     this.onSelect(el, car);
     return el;
   }
@@ -590,6 +589,9 @@ class GarageController {
       this.dom.overlay.textContent = "Reseting all cars…";
       this.dom.overlay.classList.add("show");
       document.body.setAttribute("aria-busy", "true");
+      document
+        .querySelectorAll(".workingButton")
+        .forEach((btn) => btn.classList.add("active"));
 
       try {
         await this.stopAll();
@@ -600,17 +602,23 @@ class GarageController {
     });
   }
 
-  private setupWorkingButtons(el: HTMLElement) {
-    const button = el.querySelector(".workingButton") as HTMLButtonElement;
+  private setupWorkingButtons() {
+    document.querySelectorAll(".workingButton").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".workingButton").forEach((b) => {
+          b.classList.add("active");
+          b.textContent = "Choose";
+        });
 
-    button.addEventListener("click", () => {
-      if (button.classList.contains("active")) {
-        button.classList.remove("active");
-        button.textContent = "Chosen";
-      } else {
-        button.classList.add("active");
-        button.textContent = "Choose";
-      }
+        if (btn.classList.contains("active")) {
+          btn.classList.remove("active");
+          btn.textContent = "Chosen";
+          console.log("btn");
+        } else {
+          btn.classList.add("active");
+          btn.textContent = "Choose";
+        }
+      });
     });
   }
 
