@@ -83,6 +83,9 @@ class Api {
   async removeAll(cars: Car[], winners: Winner[]) {
     return deleteAll(cars, winners);
   }
+  async correctChoice(cosenId: number, winnerId: number) {
+    return reportRaceGuess(cosenId, winnerId);
+  }
 }
 
 class Dom {
@@ -242,16 +245,6 @@ class LogIn {
 
 class SignUp {
   constructor(private dom: Dom, private api: Api) {}
-  private garage = new GarageController(this.dom, this.api);
-  private winners = new WinnersController(this.dom, this.api);
-
-  private showMainPage() {
-    this.dom.firstPage.style.display = "flex";
-    this.dom.signUp.style.display = "none";
-    this.dom.logIn.style.display = "none";
-    this.garage.load(1);
-    this.winners.load(1);
-  }
 
   init() {
     this.cancel();
@@ -262,6 +255,8 @@ class SignUp {
     this.dom.cancelBtn.addEventListener("click", () => {
       this.dom.signUp.style.display = "none";
       this.dom.logIn.style.display = "flex";
+      this.dom.singUpUserNameInput.value = "";
+      this.dom.singUpUserPassInput.value = "";
     });
   }
 
@@ -279,8 +274,11 @@ class SignUp {
 
       try {
         await auth.signup(username, password);
-        await auth.login(username, password);
-        this.showMainPage();
+        alert("You successfully been sign up");
+        this.dom.singUpUserNameInput.value = "";
+        this.dom.singUpUserPassInput.value = "";
+        this.dom.signUp.style.display = "none";
+        this.dom.logIn.style.display = "flex";
       } catch (err) {
         console.error(err);
         alert("Username already exists or signup failed.");
@@ -386,6 +384,15 @@ class GarageController {
   private suppressWinnerSaves = false;
   private activeDrives = new Map<number, AbortController>();
   private winnerRecorded = false;
+  private carNameById = new Map<number, string>();
+  private getChosenCarId(): number | null {
+    const chosenBtn = document.querySelector(
+      ".workingButton:not(.active)"
+    ) as HTMLElement;
+    if (!chosenBtn) return null;
+    const carEl = chosenBtn.closest(".car") as HTMLElement | null;
+    return carEl ? Number(carEl.dataset.id) : null;
+  }
   private refreshWinners() {
     window.dispatchEvent(new CustomEvent("winners:refresh"));
   }
@@ -403,6 +410,7 @@ class GarageController {
     const data = await this.api.getData();
     if (!data) return;
     this.allCars = data.cars;
+    this.carNameById = new Map(this.allCars.map((c) => [c.id, c.name]));
     this.dom.carsCount.innerHTML = `<h1>Garage(${this.allCars.length})</h1>`;
     this.render(page);
   }
@@ -443,6 +451,7 @@ class GarageController {
 
   private createCarElement(car: Car) {
     const el = document.createElement("div");
+    this.carNameById.set(car.id, car.name);
     el.className = "car";
     el.dataset.id = String(car.id);
     el.innerHTML = `
@@ -515,6 +524,7 @@ class GarageController {
       if (c) {
         c.name = name;
         c.color = color;
+        this.carNameById.set(id, name);
       }
       this.refreshWinners();
       await this.reloadSamePage();
@@ -625,36 +635,61 @@ class GarageController {
     const track = html.closest(".raceTrack") as HTMLElement;
 
     const res = await this.api.start(id);
-    if (!res) return;
+    if (!res || !res.velocity || !res.distance) return;
+
+    const maxX = track.clientWidth - 50 - 10;
+    const expectedMs = Math.max(1, Math.round(res.distance / res.velocity));
 
     html.style.transition = "none";
     html.style.transform = "translateX(0)";
     void html.offsetWidth;
-
-    const maxX = track.clientWidth - 50 - 10;
-    html.style.transition = `transform 3s linear`;
+    html.style.transition = `transform ${expectedMs}ms linear`;
     html.style.transform = `translateX(${maxX}px)`;
 
-    const t0 = performance.now();
     const ctrl = new AbortController();
     this.activeDrives.set(id, ctrl);
 
+    const animDone = new Promise<void>((resolve) => {
+      const handler = (e: TransitionEvent) => {
+        if (e.propertyName === "transform") resolve();
+      };
+      const t = setTimeout(resolve, expectedMs + 50);
+      html.addEventListener(
+        "transitionend",
+        (e) => {
+          if (e.propertyName !== "transform") return;
+          clearTimeout(t);
+          handler(e);
+        },
+        { once: true }
+      );
+    });
+
+    const t0 = performance.now();
     try {
-      await this.api.drive(id, ctrl.signal);
+      await Promise.all([this.api.drive(id, ctrl.signal), animDone]);
+
       const timeSec = (performance.now() - t0) / 1000;
 
       if (!this.winnerRecorded && !this.suppressWinnerSaves) {
+        const chosenId = this.getChosenCarId();
         this.winnerRecorded = true;
         const car = this.allCars.find((c) => c.id === id);
         const label = car?.name ?? `#${id}`;
         await this.api.persistWinner(id, timeSec);
+        if (chosenId && car) await this.api.correctChoice(chosenId, car?.id);
+        const stats = await getMyStats();
+        const wins = stats.wins ?? null;
+        const loses = stats.losses ?? null;
+        this.dom.userWins.textContent = `Your wins: ${wins}`;
+        this.dom.userLoses.textContent = `Your loses: ${loses}`;
         this.showWinner(label, timeSec);
         this.refreshWinners();
       }
     } catch {
-      const matrix = new DOMMatrixReadOnly(getComputedStyle(html).transform);
+      const m = new DOMMatrixReadOnly(getComputedStyle(html).transform);
       html.style.transition = "none";
-      html.style.transform = `translateX(${matrix.m41}px)`;
+      html.style.transform = `translateX(${m.m41}px)`;
     } finally {
       this.activeDrives.delete(id);
     }
