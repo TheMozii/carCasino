@@ -404,6 +404,7 @@ class GarageController {
   private activeDrives = new Map<number, AbortController>();
   private winnerRecorded = false;
   private carNameById = new Map<number, string>();
+  private isLoading = false;
   private getChosenCarId(): number | null {
     const chosenBtn = document.querySelector(
       ".workingButton:not(.active)"
@@ -426,12 +427,17 @@ class GarageController {
   }
 
   async load(page = 1) {
-    const data = await this.api.getData();
-    if (!data) return;
-    this.allCars = data.cars;
-    this.carNameById = new Map(this.allCars.map((c) => [c.id, c.name]));
-    this.dom.carsCount.innerHTML = `<h1>Garage(${this.allCars.length})</h1>`;
-    this.render(page);
+    this.isLoading = true;
+    try {
+      const data = await this.api.getData();
+      if (!data) return;
+      this.allCars = data.cars;
+      this.carNameById = new Map(this.allCars.map((c) => [c.id, c.name]));
+      this.dom.carsCount.innerHTML = `<h1>Garage(${this.allCars.length})</h1>`;
+      this.render(page);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   private logOut() {
@@ -687,22 +693,34 @@ class GarageController {
     const t0 = performance.now();
     try {
       await Promise.all([this.api.drive(id, ctrl.signal), animDone]);
-
       const timeSec = (performance.now() - t0) / 1000;
 
       if (!this.winnerRecorded && !this.suppressWinnerSaves) {
-        const chosenId = this.getChosenCarId();
         this.winnerRecorded = true;
-        const car = this.allCars.find((c) => c.id === id);
-        const label = car?.name ?? `#${id}`;
+        let car = this.allCars.find((c) => c.id === id);
+        if (!car) {
+          const card = (svg.closest(".car") as HTMLElement) || undefined;
+          const name =
+            (
+              card?.querySelector(".carElementTopSide p") as HTMLElement
+            )?.textContent?.trim() || `#${id}`;
+          const color =
+            (
+              card?.querySelector(".raceTrackCar path") as SVGPathElement
+            )?.getAttribute("fill") || "#ccc";
+          car = { id, name, color };
+        }
+
         await this.api.persistWinner(id, timeSec);
-        if (chosenId && car) await this.api.correctChoice(chosenId, car?.id);
+
+        const chosenId = this.getChosenCarId();
+        if (chosenId) await this.api.correctChoice(chosenId, id);
+
         const stats = await getMyStats();
-        const wins = stats.wins ?? null;
-        const loses = stats.losses ?? null;
-        this.dom.userWins.textContent = `Your wins: ${wins}`;
-        this.dom.userLoses.textContent = `Your loses: ${loses}`;
-        this.showWinner(label, timeSec);
+        this.dom.userWins.textContent = `Your wins: ${stats.wins}`;
+        this.dom.userLoses.textContent = `Your loses: ${stats.losses}`;
+
+        this.showWinner(car.name ?? `#${id}`, timeSec);
         this.refreshWinners();
       }
     } catch {
@@ -726,7 +744,7 @@ class GarageController {
   }
 
   private async raceAll() {
-    if (this.isDeletingAll) return;
+    if (this.isDeletingAll || this.isLoading) return;
     this.winnerRecorded = false;
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
@@ -827,14 +845,16 @@ class WinnersController {
   }
 
   private extendWithCars(winners: Winner[], cars: Car[]): ExtendedWinner[] {
-    return winners.map((w) => {
-      const car = cars.find((c) => c.id === w.id);
-      return {
-        ...w,
-        name: car?.name || "Unknown",
-        color: car?.color || "#ccc",
-      };
-    });
+    return winners
+      .filter((w) => cars.some((c) => c.id === w.id))
+      .map((w) => {
+        const car = cars.find((c) => c.id === w.id);
+        return {
+          ...w,
+          name: car?.name || `#${w.id}`,
+          color: car?.color || "#ccc",
+        };
+      });
   }
 
   async load(page = 1) {
@@ -934,6 +954,8 @@ class App {
     this.signUp.init();
     this.profile.init();
 
+    this.dom.raceBtn.disabled = true;
+
     this.garagePager = new Paginator(
       this.dom.btnPrev,
       this.dom.btnNext,
@@ -955,8 +977,9 @@ class App {
       return;
     }
 
-    this.garage.load(1);
-    this.winners.load(1);
+    await Promise.all([this.garage.load(1), this.winners.load(1)]);
+
+    this.dom.raceBtn.disabled = false;
 
     this.dom.colorBox1.style.backgroundColor =
       this.dom.colorPicker1.value || "#00ff80";

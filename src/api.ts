@@ -42,13 +42,15 @@ export const saveWinner = async (id: number, time: number): Promise<void> => {
           id,
           wins: winner.wins + 1,
           time: Math.min(winner.time, time),
+          userId: winner.userId ?? (await auth.current()).user?.id,
         }),
       });
     } else {
+      const { user } = await auth.current();
       await fetch("http://localhost:3000/winners", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, wins: 1, time }),
+        body: JSON.stringify({ id, wins: 1, time, userId: user?.id }),
       });
     }
   } catch (e) {
