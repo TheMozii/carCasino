@@ -191,3 +191,6 @@ export const reportRaceGuess = async (
       body: JSON.stringify({ chosenCarId, winnerCarId }),
     })
   ).json() as Promise<{ correct: boolean; wins: number; losses: number }>;
+
+export const deleteAccount = async () =>
+  (await apiFetch(`${BASE}/auth/me`, { method: "DELETE" })).json();

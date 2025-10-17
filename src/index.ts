@@ -13,6 +13,7 @@ import {
   deleteAll,
   getMyStats,
   reportRaceGuess,
+  deleteAccount,
   type CarDto,
 } from "./api";
 
@@ -85,6 +86,9 @@ class Api {
   }
   async correctChoice(cosenId: number, winnerId: number) {
     return reportRaceGuess(cosenId, winnerId);
+  }
+  async deleteAccount() {
+    return deleteAccount();
   }
 }
 
@@ -291,6 +295,7 @@ class SignUp {
 
 class Profile {
   constructor(private dom: Dom, private api: Api) {}
+  private garage = new GarageController(this.dom, this.api);
 
   init() {
     this.open();
@@ -320,22 +325,34 @@ class Profile {
 
   private alertYes() {
     this.dom.alertYes.addEventListener("click", async () => {
-      this.dom.overlay.textContent = "deliting";
+      const btns = document.querySelectorAll(".headerButton");
+      this.dom.overlay.textContent = "Deleting…";
       this.dom.overlay.classList.add("show");
       document.body.setAttribute("aria-busy", "true");
 
       try {
+        await this.garage.stopAll();
+
+        btns.forEach((b) => b.classList.remove("active"));
+        btns[0].classList.add("active");
+
+        await this.api.deleteAccount();
+
+        this.dom.carsList.innerHTML = "";
+        this.dom.tableBody.innerHTML = "";
+        this.dom.carsCount.innerHTML = `<h1>Garage(0)</h1>`;
+        this.dom.winnersCount.innerHTML = `<h1>Winners(0)</h1>`;
       } finally {
         this.dom.overlay.classList.remove("show");
         document.body.removeAttribute("aria-busy");
       }
-      window.location.reload();
       this.dom.profile.style.display = "none";
       this.dom.profileBox.style.display = "none";
       this.dom.alertBox.style.display = "none";
       this.dom.firstPage.style.display = "none";
       this.dom.signUp.style.display = "none";
       this.dom.logIn.style.display = "flex";
+      window.location.reload();
     });
   }
 
@@ -721,7 +738,7 @@ class GarageController {
     }
   }
 
-  private async stopAll() {
+  async stopAll() {
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
     ) as NodeListOf<HTMLElement>;
