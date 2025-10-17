@@ -184,6 +184,8 @@ class LogIn {
   constructor(private dom: Dom, private api: Api) {}
   private garage = new GarageController(this.dom, this.api);
   private winners = new WinnersController(this.dom, this.api);
+  private garagePager!: Paginator;
+  private winnersPager!: Paginator;
 
   init() {
     this.logInAcc();
@@ -219,7 +221,7 @@ class LogIn {
     });
   }
 
-  private showMainPage() {
+  private async showMainPage() {
     this.dom.firstPage.style.display = "flex";
     this.dom.signUp.style.display = "none";
     this.dom.logIn.style.display = "none";
@@ -235,8 +237,21 @@ class LogIn {
         this.dom.userLoses.textContent = `Your loses: ${loses}`;
       }
     })();
-    this.garage.load(1);
-    this.winners.load(1);
+    this.garagePager = new Paginator(
+      this.dom.btnPrev,
+      this.dom.btnNext,
+      this.dom.pageNumber,
+      (p) => this.garage.load(p)
+    );
+    this.winnersPager = new Paginator(
+      this.dom.btnPrevW,
+      this.dom.btnNextW,
+      this.dom.pageNumberWinner,
+      (p) => this.winners.load(p)
+    );
+    await Promise.all([this.garage.load(1), this.winners.load(1)]);
+    this.garagePager.setPageSilently(1);
+    this.winnersPager.setPageSilently(1);
   }
 
   private logInSignUp() {
@@ -366,6 +381,8 @@ class Profile {
 
 class Paginator {
   #page = 1;
+  #totalPages = 1;
+
   constructor(
     private prevBtn: HTMLButtonElement,
     private nextBtn: HTMLButtonElement,
@@ -376,22 +393,33 @@ class Paginator {
     this.nextBtn.addEventListener("click", () => this.next());
     this.render();
   }
+  setTotal(totalItems: number, perPage: number) {
+    this.#totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+    if (this.#page > this.#totalPages) this.#page = this.#totalPages;
+    this.render();
+  }
   get page() {
     return this.#page;
   }
   set page(v: number) {
-    this.#page = Math.max(1, v);
+    this.#page = Math.min(Math.max(1, v), this.#totalPages);
     this.render();
     this.onChange(this.#page);
   }
   async next() {
-    this.page = this.#page + 1;
+    if (this.#page < this.#totalPages) this.page = this.#page + 1;
   }
   prev() {
     if (this.#page > 1) this.page = this.#page - 1;
   }
   render() {
     this.label.textContent = String(this.#page);
+    this.prevBtn.disabled = this.#page <= 1;
+    this.nextBtn.disabled = this.#page >= this.#totalPages;
+  }
+  setPageSilently(p: number) {
+    this.#page = Math.max(1, Math.min(p, this.#totalPages));
+    this.render();
   }
 }
 
@@ -434,6 +462,11 @@ class GarageController {
       this.allCars = data.cars;
       this.carNameById = new Map(this.allCars.map((c) => [c.id, c.name]));
       this.dom.carsCount.innerHTML = `<h1>Garage(${this.allCars.length})</h1>`;
+      window.dispatchEvent(
+        new CustomEvent("garage:total", {
+          detail: { total: this.allCars.length },
+        })
+      );
       this.render(page);
     } finally {
       this.isLoading = false;
@@ -862,6 +895,11 @@ class WinnersController {
     if (!data) return;
     this.allWinners = this.extendWithCars(data.winners, data.cars);
     this.dom.winnersCount.innerHTML = `<h1>Winners(${this.allWinners.length})</h1>`;
+    window.dispatchEvent(
+      new CustomEvent("winners:total", {
+        detail: { total: this.allWinners.length },
+      })
+    );
     this.render(page);
   }
 
@@ -969,6 +1007,13 @@ class App {
       (p) => this.winners.load(p)
     );
 
+    window.addEventListener("garage:total", (e: any) => {
+      this.garagePager.setTotal(e.detail.total, carsPerPage);
+    });
+    window.addEventListener("winners:total", (e: any) => {
+      this.winnersPager.setTotal(e.detail.total, winnersPerPage);
+    });
+
     const { user } = await auth.current();
     if (!user) {
       this.dom.firstPage.style.display = "none";
@@ -978,6 +1023,8 @@ class App {
     }
 
     await Promise.all([this.garage.load(1), this.winners.load(1)]);
+    this.garagePager.setPageSilently(1);
+    this.winnersPager.setPageSilently(1);
 
     this.dom.raceBtn.disabled = false;
 
