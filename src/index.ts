@@ -277,6 +277,8 @@ class SignUp {
         alert("You successfully been sign up");
         this.dom.singUpUserNameInput.value = "";
         this.dom.singUpUserPassInput.value = "";
+        this.dom.userNameInput.value = "";
+        this.dom.userPassInput.value = "";
         this.dom.signUp.style.display = "none";
         this.dom.logIn.style.display = "flex";
       } catch (err) {
