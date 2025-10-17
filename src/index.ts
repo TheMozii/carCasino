@@ -14,7 +14,6 @@ import {
   getMyStats,
   reportRaceGuess,
   deleteAccount,
-  type CarDto,
 } from "./api";
 
 interface Car {
@@ -78,9 +77,6 @@ class Api {
   async removeWinner(id: number) {
     return deleteWinner(id);
   }
-  async bulkCreate(cars: CarDto[]) {
-    return bulkCreateCars(cars);
-  }
   async removeAll(cars: Car[], winners: Winner[]) {
     return deleteAll(cars, winners);
   }
@@ -95,9 +91,6 @@ class Api {
 class Dom {
   headerBtnGarage = document.getElementById(
     "headerButton1"
-  ) as HTMLButtonElement;
-  headerBtnWinners = document.getElementById(
-    "headerButton2"
   ) as HTMLButtonElement;
   pageGarage = document.querySelector(".firstPage") as HTMLDivElement;
   pageWinners = document.querySelector(".winners") as HTMLDivElement;
@@ -132,7 +125,6 @@ class Dom {
   cancelBtn = document.getElementById("cancelBtn") as HTMLButtonElement;
   signUpBtn = document.getElementById("signUpBtn") as HTMLButtonElement;
   logOut = document.getElementById("logOut") as HTMLButtonElement;
-  winners = document.querySelector(".winners") as HTMLDivElement;
   profExBtn = document.getElementById("profExBtn") as HTMLButtonElement;
   profile = document.querySelector(".profile") as HTMLDivElement;
   profBtn = document.getElementById("profBtn") as HTMLButtonElement;
@@ -181,11 +173,7 @@ const SVG = {
 };
 
 class LogIn {
-  constructor(private dom: Dom, private api: Api) {}
-  private garage = new GarageController(this.dom, this.api);
-  private winners = new WinnersController(this.dom, this.api);
-  private garagePager!: Paginator;
-  private winnersPager!: Paginator;
+  constructor(private dom: Dom) {}
 
   init() {
     this.logInAcc();
@@ -213,6 +201,7 @@ class LogIn {
 
       try {
         await auth.login(username, password);
+        window.dispatchEvent(new Event("auth:login"));
         this.showMainPage();
       } catch (err) {
         console.error(err);
@@ -237,21 +226,6 @@ class LogIn {
         this.dom.userLoses.textContent = `Your loses: ${loses}`;
       }
     })();
-    this.garagePager = new Paginator(
-      this.dom.btnPrev,
-      this.dom.btnNext,
-      this.dom.pageNumber,
-      (p) => this.garage.load(p)
-    );
-    this.winnersPager = new Paginator(
-      this.dom.btnPrevW,
-      this.dom.btnNextW,
-      this.dom.pageNumberWinner,
-      (p) => this.winners.load(p)
-    );
-    await Promise.all([this.garage.load(1), this.winners.load(1)]);
-    this.garagePager.setPageSilently(1);
-    this.winnersPager.setPageSilently(1);
   }
 
   private logInSignUp() {
@@ -263,7 +237,7 @@ class LogIn {
 }
 
 class SignUp {
-  constructor(private dom: Dom, private api: Api) {}
+  constructor(private dom: Dom) {}
 
   init() {
     this.cancel();
@@ -487,11 +461,12 @@ class GarageController {
         document.body.removeAttribute("aria-busy");
       }
       await auth.logout();
+      window.dispatchEvent(new Event("auth:logout"));
       btns.forEach((b) => b.classList.remove("active"));
       btns[0].classList.add("active");
       this.dom.firstPage.style.display = "none";
       this.dom.signUp.style.display = "none";
-      this.dom.winners.style.display = "none";
+      this.dom.pageWinners.style.display = "none";
       this.dom.logIn.style.display = "flex";
     });
   }
@@ -976,8 +951,8 @@ class WinnersController {
 class App {
   private api = new Api();
   private dom = new Dom();
-  private logIn = new LogIn(this.dom, this.api);
-  private signUp = new SignUp(this.dom, this.api);
+  private logIn = new LogIn(this.dom);
+  private signUp = new SignUp(this.dom);
   private profile = new Profile(this.dom, this.api);
   private garage = new GarageController(this.dom, this.api);
   private winners = new WinnersController(this.dom, this.api);
@@ -1025,6 +1000,17 @@ class App {
     await Promise.all([this.garage.load(1), this.winners.load(1)]);
     this.garagePager.setPageSilently(1);
     this.winnersPager.setPageSilently(1);
+
+    window.addEventListener("auth:login", async () => {
+      this.garagePager.setPageSilently(1);
+      this.winnersPager.setPageSilently(1);
+      await Promise.all([this.garage.load(1), this.winners.load(1)]);
+    });
+
+    window.addEventListener("auth:logout", () => {
+      this.garagePager.setPageSilently(1);
+      this.winnersPager.setPageSilently(1);
+    });
 
     this.dom.raceBtn.disabled = false;
 
