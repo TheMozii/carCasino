@@ -282,16 +282,27 @@ header {
   height: 100%;
   pointer-events: none;
   position: absolute;
-  z-index: 2;
+  z-index: 1;
   background: none;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.winnerDisplay h1 {
-  background: #ff3333;
+.winnerAlert {
+  height: 200px;
+  width: 50%;
   position: fixed;
+  background: none;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.winnerAlert h1 {
+  background: #ff3333;
   color: #ffff00;
   font-size: xx-large;
   font-weight: 700;

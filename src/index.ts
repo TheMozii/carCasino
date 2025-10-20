@@ -728,7 +728,11 @@ class GarageController {
         this.dom.userWins.textContent = `Your wins: ${stats.wins}`;
         this.dom.userLoses.textContent = `Your loses: ${stats.losses}`;
 
-        this.showWinner(car.name ?? `#${id}`, timeSec);
+        let result = false;
+
+        if (chosenId === id) result = true;
+
+        this.showWinner(car.name ?? `#${id}`, timeSec, result);
         this.refreshWinners();
       }
     } catch {
@@ -783,11 +787,11 @@ class GarageController {
     }
   }
 
-  private showWinner(name: string, time: number) {
+  private showWinner(name: string, time: number, result: boolean) {
     const el = this.dom.winnerDisplay;
-    el.innerHTML = `<h1 class="winnerAlert">Winner ${name} — ${time.toFixed(
-      2
-    )}s</h1>`;
+    el.innerHTML = `<div class="winnerAlert">
+    <h1>Winner ${name} — ${time.toFixed(2)}s</h1>
+    <h1>${result ? "You won" : "You lost"}</h1></div>`;
     el.classList.add("visible");
     clearTimeout(this._winnerTimeout);
     this._winnerTimeout = setTimeout(
@@ -989,30 +993,27 @@ class App {
       this.winnersPager.setTotal(e.detail.total, winnersPerPage);
     });
 
+    window.addEventListener("auth:login", async () => {
+      await this.loadFirstPage();
+    });
+    window.addEventListener("auth:logout", () => {
+      this.garagePager.setPageSilently(1);
+      this.winnersPager.setPageSilently(1);
+      this.dom.raceBtn.disabled = true;
+    });
+
     const { user } = await auth.current();
     if (!user) {
       this.dom.firstPage.style.display = "none";
       this.dom.logIn.style.display = "flex";
       this.dom.signUp.style.display = "flex";
-      return;
+    } else {
+      await this.loadFirstPage();
     }
 
     await Promise.all([this.garage.load(1), this.winners.load(1)]);
     this.garagePager.setPageSilently(1);
     this.winnersPager.setPageSilently(1);
-
-    window.addEventListener("auth:login", async () => {
-      this.garagePager.setPageSilently(1);
-      this.winnersPager.setPageSilently(1);
-      await Promise.all([this.garage.load(1), this.winners.load(1)]);
-    });
-
-    window.addEventListener("auth:logout", () => {
-      this.garagePager.setPageSilently(1);
-      this.winnersPager.setPageSilently(1);
-    });
-
-    this.dom.raceBtn.disabled = false;
 
     this.dom.colorBox1.style.backgroundColor =
       this.dom.colorPicker1.value || "#00ff80";
@@ -1022,6 +1023,19 @@ class App {
     window.addEventListener("winners:refresh", () => {
       this.winners.load(this.winnersPager.page);
     });
+  }
+
+  private async loadFirstPage() {
+    this.dom.firstPage.style.display = "flex";
+    this.dom.logIn.style.display = "none";
+    this.dom.signUp.style.display = "none";
+
+    this.garagePager.setPageSilently(1);
+    this.winnersPager.setPageSilently(1);
+
+    await Promise.all([this.garage.load(1), this.winners.load(1)]);
+
+    this.dom.raceBtn.disabled = false;
   }
 
   private setupHeaderSwitching() {
