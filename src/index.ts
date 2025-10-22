@@ -199,6 +199,18 @@ class LogIn {
         return;
       }
 
+      if (
+        this.dom.winnersSort.classList.contains("up") ||
+        this.dom.winnersSort.classList.contains("down") ||
+        this.dom.timeSort.classList.contains("up") ||
+        this.dom.timeSort.classList.contains("down")
+      ) {
+        this.dom.winnersSort.classList.remove("up", "down");
+        this.dom.timeSort.classList.remove("up", "down");
+        this.dom.winnersSort.innerHTML = "Wins";
+        this.dom.timeSort.innerHTML = "Best time";
+      }
+
       try {
         await auth.login(username, password);
         window.dispatchEvent(new Event("auth:login"));
@@ -935,6 +947,14 @@ class WinnersController {
   }
 
   private async toggleWinsSort() {
+    if (
+      this.dom.timeSort.classList.contains("up") ||
+      this.dom.timeSort.classList.contains("down")
+    ) {
+      this.dom.timeSort.classList.remove("up", "down");
+      this.dom.timeSort.innerHTML = "Best time";
+    }
+
     const newDir = this.dom.winnersSort.classList.contains("up")
       ? "desc"
       : "asc";
@@ -949,6 +969,13 @@ class WinnersController {
   }
 
   private async toggleTimeSort() {
+    if (
+      this.dom.winnersSort.classList.contains("up") ||
+      this.dom.winnersSort.classList.contains("down")
+    ) {
+      this.dom.winnersSort.classList.remove("up", "down");
+      this.dom.winnersSort.innerHTML = "Wins";
+    }
     const newDir = this.dom.timeSort.classList.contains("up") ? "desc" : "asc";
     this.setSortArrow(this.dom.timeSort, newDir, "time");
     const data = await this.api.getData();
