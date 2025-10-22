@@ -203,6 +203,10 @@ header {
   transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
 }
 
+.workingButton.active:hover {
+  background-color: #00ff80;
+}
+
 .workingButton.active {
   background-color: #ffff00;
 }
