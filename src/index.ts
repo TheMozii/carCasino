@@ -208,7 +208,7 @@ class LogIn {
         this.dom.winnersSort.classList.remove("up", "down");
         this.dom.timeSort.classList.remove("up", "down");
         this.dom.winnersSort.innerHTML = "Wins";
-        this.dom.timeSort.innerHTML = "Best time";
+        this.dom.timeSort.innerHTML = "Best time (seconds)";
       }
 
       try {
@@ -952,7 +952,7 @@ class WinnersController {
       this.dom.timeSort.classList.contains("down")
     ) {
       this.dom.timeSort.classList.remove("up", "down");
-      this.dom.timeSort.innerHTML = "Best time";
+      this.dom.timeSort.innerHTML = "Best time (seconds)";
     }
 
     const newDir = this.dom.winnersSort.classList.contains("up")
