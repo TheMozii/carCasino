@@ -636,7 +636,7 @@ class GarageController {
       document
         .querySelectorAll(".workingButton")
         .forEach((btn) => btn.classList.add("active"));
-      this.raceStart = false; 
+      this.raceStart = false;
       try {
         await this.stopAll();
       } finally {
@@ -733,7 +733,13 @@ class GarageController {
 
         if (chosenId === id) result = true;
 
-        this.showWinner(car.name ?? `#${id}`, timeSec, result);
+        this.showWinner(car.name ?? `#${id}`, timeSec);
+
+        if (chosenId) {
+          const el = document.querySelector(".winnerAlert");
+          if (!el) return;
+          el.innerHTML += `<h1>${result ? "You won" : "You lost"}</h1></div>`;
+        }
         this.refreshWinners();
       }
     } catch {
@@ -790,11 +796,11 @@ class GarageController {
     }
   }
 
-  private showWinner(name: string, time: number, result: boolean) {
+  private showWinner(name: string, time: number) {
     const el = this.dom.winnerDisplay;
     el.innerHTML = `<div class="winnerAlert">
     <h1>Winner ${name} — ${time.toFixed(2)}s</h1>
-    <h1>${result ? "You won" : "You lost"}</h1></div>`;
+    `;
     el.classList.add("visible");
     clearTimeout(this._winnerTimeout);
     this._winnerTimeout = setTimeout(
