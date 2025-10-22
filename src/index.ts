@@ -407,6 +407,7 @@ class GarageController {
   private winnerRecorded = false;
   private carNameById = new Map<number, string>();
   private isLoading = false;
+  private raceStart = false;
   private getChosenCarId(): number | null {
     const chosenBtn = document.querySelector(
       ".workingButton:not(.active)"
@@ -635,7 +636,7 @@ class GarageController {
       document
         .querySelectorAll(".workingButton")
         .forEach((btn) => btn.classList.add("active"));
-
+      this.raceStart = false; 
       try {
         await this.stopAll();
       } finally {
@@ -757,6 +758,8 @@ class GarageController {
 
   private async raceAll() {
     if (this.isDeletingAll || this.isLoading) return;
+    if (this.raceStart) return;
+    this.raceStart = true;
     this.winnerRecorded = false;
     const cards = this.dom.carsList.querySelectorAll(
       "[data-id]"
