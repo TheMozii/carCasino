@@ -35,7 +35,7 @@ interface DataBundle {
   winners: Winner[];
 }
 
-const carsPerPage = 5;
+const carsPerPage = 4;
 const winnersPerPage = 10;
 const carSize = 50;
 
@@ -621,7 +621,7 @@ class GarageController {
     });
 
     this.dom.generateBtn.addEventListener("click", async () => {
-      const cars = this.generateRandomCars(5);
+      const cars = this.generateRandomCars(4);
       await bulkCreateCars(cars);
       await this.reloadSamePage();
     });
