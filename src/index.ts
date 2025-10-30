@@ -138,6 +138,10 @@ class Dom {
   userName = document.getElementById("userName") as HTMLHeadElement;
   userWins = document.getElementById("userWins") as HTMLHeadElement;
   userLoses = document.getElementById("userLoses") as HTMLHeadElement;
+  passwordBtn = document.querySelector(".passwordBtn") as HTMLButtonElement;
+  passwordBtnSignUp = document.querySelector(
+    ".passwordBtnSignUp"
+  ) as HTMLButtonElement;
   pageNumberWinner = document.getElementById(
     "pageNumberWinner"
   ) as HTMLSpanElement;
@@ -172,12 +176,102 @@ const SVG = {
   },
 };
 
+const EYE = {
+  closedEye() {
+    return `<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 256 256"
+      id="eye-closed"
+    >
+      <rect width="256" height="256" fill="none"></rect>
+      <line
+        x1="201.15"
+        x2="223.96"
+        y1="127.305"
+        y2="166.813"
+        fill="none"
+        stroke="#00ff80"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+      ></line>
+      <line
+        x1="154.182"
+        x2="161.296"
+        y1="149.263"
+        y2="189.607"
+        fill="none"
+        stroke="#00ff80"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+      ></line>
+      <line
+        x1="101.73"
+        x2="94.615"
+        y1="149.244"
+        y2="189.594"
+        fill="none"
+        stroke="#00ff80"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+      ></line>
+      <line
+        x1="54.809"
+        x2="31.889"
+        y1="127.272"
+        y2="166.971"
+        fill="none"
+        stroke="#00ff80"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+      ></line>
+      <path
+        fill="none"
+        stroke="#00ff80"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+        d="M31.99943,104.87509C48.81193,125.68556,79.63353,152,128,152c48.36629,0,79.18784-26.31424,96.00039-47.12468"
+      ></path>
+    </svg>
+    `;
+  },
+  openEye() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" id="eye-open">
+      <rect width="256" height="256" fill="none"></rect>
+      <path
+        fill="none"
+        stroke="#ff0000"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+        d="M32,128c16-24,48-56,96-56s80,32,96,56c-16,24-48,56-96,56s-80-32-96-56Z"
+      ></path>
+      <circle
+        cx="128"
+        cy="128"
+        r="24"
+        fill="none"
+        stroke="#ff0000"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="24"
+      ></circle>
+    </svg>
+  `;
+  },
+};
+
 class LogIn {
   constructor(private dom: Dom) {}
 
   init() {
     this.logInAcc();
     this.logInSignUp();
+    this.showPassword();
   }
 
   private logInAcc() {
@@ -246,6 +340,21 @@ class LogIn {
       this.dom.logIn.style.display = "none";
     });
   }
+
+  private showPassword() {
+    this.dom.passwordBtn.addEventListener("click", () => {
+      if (!this.dom.passwordBtn.classList.contains("active")) {
+        this.dom.passwordBtn.innerHTML = `${EYE.closedEye()}`;
+        this.dom.passwordBtn.classList.add("active");
+        this.dom.userPassInput.type = "password";
+      } else {
+        this.dom.passwordBtn.innerHTML = `${EYE.openEye()}`;
+        this.dom.passwordBtn.classList.remove("active");
+        this.dom.userPassInput.type = "input";
+        this.dom.passwordBtn.style.color = "red";
+      }
+    });
+  }
 }
 
 class SignUp {
@@ -254,6 +363,21 @@ class SignUp {
   init() {
     this.cancel();
     this.signUpAcc();
+    this.showPassword();
+  }
+
+  private showPassword() {
+    this.dom.passwordBtnSignUp.addEventListener("click", () => {
+      if (!this.dom.passwordBtnSignUp.classList.contains("active")) {
+        this.dom.passwordBtnSignUp.innerHTML = `${EYE.closedEye()}`;
+        this.dom.passwordBtnSignUp.classList.add("active");
+        this.dom.singUpUserPassInput.type = "password";
+      } else {
+        this.dom.passwordBtnSignUp.innerHTML = `${EYE.openEye()}`;
+        this.dom.passwordBtnSignUp.classList.remove("active");
+        this.dom.singUpUserPassInput.type = "input";
+      }
+    });
   }
 
   private cancel() {
