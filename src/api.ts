@@ -143,7 +143,7 @@ const apiFetch = async (url: string, init?: RequestInit) => {
   const r = await fetch(url, init);
   if (r.status === 401) {
     window.dispatchEvent(new Event("auth:required"));
-    throw new Error("Not logged in");
+    console.error("Not logged in");
   }
   return r;
 };
