@@ -600,3 +600,246 @@ h2 {
   align-items: center;
   justify-content: center;
 }
+
+@media (max-width: 720px) {
+  html,
+  body {
+    min-width: 320px;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  header {
+    min-height: 4em;
+    height: auto;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  header h1 {
+    order: -1;
+    width: 100%;
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  .headerLeftNav,
+  .headerRightNav {
+    width: auto;
+    flex: 1 1 100%;
+    justify-content: stretch;
+  }
+
+  .topNavigation {
+    width: 100%;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .headerButton,
+  .headerButtonRight {
+    min-height: 42px;
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+
+  .headerButton:hover,
+  .headerButtonRight:hover,
+  .workingButton.active:hover {
+    background-color: #ff3333;
+  }
+
+  .headerButton.active:hover,
+  .headerButtonRight.active:hover,
+  .btn:hover,
+  .workingButton:hover,
+  .workingButton.active:hover {
+    background-color: #ffff00;
+  }
+
+  .topNavigationInputs {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px auto;
+    width: 100%;
+    max-width: none;
+  }
+
+  .topNavigationInputs .input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .topNavigationBottomBtn {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .topNavigationBottomBtn .btn {
+    padding-inline: 8px;
+  }
+
+  .btn {
+    min-height: 40px;
+    white-space: nowrap;
+  }
+
+  .workingButton {
+    width: auto;
+    min-height: 40px;
+    padding: 10px 16px;
+    font-size: 1em;
+    background-color: #ffff00;
+    color: #000;
+    border-radius: 5px;
+    box-shadow: 0 2px 0 #3f7ded;
+    white-space: nowrap;
+  }
+
+  .garage {
+    padding-inline: 10px;
+    width: 100%;
+  }
+
+  .carElementTopSide {
+    flex-wrap: wrap;
+  }
+
+  .carElementTopSide p {
+    overflow-wrap: anywhere;
+  }
+
+  .raceTrack {
+    height: 48px;
+    min-width: 0;
+  }
+
+  .raceTrackCar,
+  .flag {
+    width: 42px;
+    height: 42px;
+  }
+
+  .flag {
+    right: 8px;
+    left: auto;
+  }
+
+  .tableScroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .winners {
+    width: 100%;
+  }
+
+  .winners table {
+    width: 100%;
+    min-width: 560px;
+  }
+
+  .winners th {
+    width: auto;
+  }
+
+  .winners td {
+    width: auto;
+    overflow-wrap: anywhere;
+  }
+
+  .winnerAlert {
+    min-height: 120px;
+    height: auto;
+    width: min(560px, calc(100% - 32px));
+  }
+
+  .winnerAlert h1 {
+    font-size: clamp(1.1rem, 5vw, 2rem);
+    text-align: center;
+    padding: 8px;
+    overflow-wrap: anywhere;
+  }
+
+  .carsManag {
+    width: min(360px, 100%);
+  }
+
+  .logIn,
+  .signUp {
+    padding: 80px 16px 24px;
+  }
+
+  .logInBox,
+  .signUpBox {
+    width: min(380px, 100%);
+  }
+
+  .profileBox {
+    width: min(420px, calc(100% - 32px));
+    position: relative;
+  }
+
+  #profExBtn {
+    right: 10px;
+    top: 10px;
+  }
+
+  #delAcc {
+    left: 10px;
+    top: 10px;
+  }
+
+  .profileName {
+    padding-top: 52px;
+  }
+
+  .alertBox {
+    width: min(360px, calc(100% - 32px));
+  }
+}
+
+@media (max-width: 430px) {
+  .logInBtns,
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .logInBtns .btn {
+    flex: 1 1 130px;
+  }
+
+  .topNavigationInputs {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .topNavigationInputs .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .topNavigationBottomBtn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .carElementTopSide {
+    gap: 8px;
+  }
+
+  .workingButton {
+    width: auto;
+    max-width: none;
+  }
+
+  .profileBox h2 {
+    font-size: 1rem;
+  }
+}

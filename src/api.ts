@@ -1,4 +1,4 @@
-const BASE = "http://localhost:3000";
+export const BASE = "https://raceapi-m1iw.onrender.com";
 
 export interface CarDto {
   id: number;
@@ -32,10 +32,10 @@ export const changeEngineStatus = async (
 
 export const saveWinner = async (id: number, time: number): Promise<void> => {
   try {
-    const res = await fetch(`http://localhost:3000/winners/${id}`);
+    const res = await apiFetch(`${BASE}/winners/${id}`);
     if (res.ok) {
       const winner = await res.json();
-      await fetch(`http://localhost:3000/winners/${id}`, {
+      await apiFetch(`${BASE}/winners/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,7 +47,7 @@ export const saveWinner = async (id: number, time: number): Promise<void> => {
       });
     } else {
       const { user } = await auth.current();
-      await fetch("http://localhost:3000/winners", {
+      await apiFetch(`${BASE}/winners`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, wins: 1, time, userId: user?.id }),
@@ -140,7 +140,7 @@ export const deleteAll = async (
 };
 
 const apiFetch = async (url: string, init?: RequestInit) => {
-  const r = await fetch(url, init);
+  const r = await fetch(url, { credentials: "include", ...init });
   if (r.status === 401) {
     window.dispatchEvent(new Event("auth:required"));
     console.error("Not logged in");

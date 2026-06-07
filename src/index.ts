@@ -50,14 +50,7 @@ class Api {
     return changeEngineStatus(id, "stopped");
   }
   async drive(id: number, signal?: AbortSignal) {
-    const r = await fetch(
-      `http://localhost:3000/engine?id=${id}&status=drive`,
-      {
-        method: "PATCH",
-        signal,
-      }
-    );
-    if (!r.ok) throw new Error(await r.text());
+    return changeEngineStatus(id, "drive", signal);
   }
   async persistWinner(id: number, time: number) {
     return saveWinner(id, time);
